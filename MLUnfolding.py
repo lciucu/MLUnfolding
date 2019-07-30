@@ -181,7 +181,8 @@ def prepareModel(nvar=1, NBins=NBins, kappa=8):
 
 # Prepare the model with one input variable
 model = prepareModel(1)
-print("luiza");exit()
+print("luiza");
+#exit()
 
 
 # Prepare inputs for keras
@@ -195,20 +196,23 @@ print("r.shape",r.shape)
 rt = rt.reshape(rt.shape[0],1,1)
 rf = rf.reshape(rf.shape[0],1,1)
 
-exit()
+#exit()
 # Fit the model
 h = model.fit(rf,gfcat,batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(rt,gtcat))
 
 # save model,if needed
 model.save("model.hdf5")
 
+
+
 # Prepare bootstrap replica to determine statistical uncertainties.
 def prepareBootstrap(rt,N=10):
     ''' Prepare bootstrap weights, for error statistical and correlation estimation '''
     Nev = rt.shape[0]
+    print("Nev",Nev)
     p = np.random.poisson(size=(Nev,N))
     return p
-
+    
 # Unfold the reference sample, prepare bootstrap replica of the result to estimate stat. uncertainties.
 rt = rt.reshape(rt.shape[0],1,1)
 out = model.predict(rt)
