@@ -3,7 +3,12 @@ from __future__ import print_function
 
 import ROOT
 
+import numpy as np
+
 debug=True
+verbose=True
+#list_treeName=["nominal","particleLevel"]
+list_treeName=["nominal"]
 
 
 # relative path
@@ -16,122 +21,68 @@ def start():
 
 def end():
     print("All ended well!")
+
+
+def doItForOneTree(inFile,treeName,debug):
+    if debug:
+        print("start doItForOneTree() for tree",treeName)
+    tree=inFile.Get(treeName)
+    nrEvents=tree.GetEntries()
+    if debug:
+        print("nrEvents",nrEvents)
+    # create a canvas
+    c=ROOT.TCanvas("c_leading_jet_pt_"+treeName,"c_leading_jet_pt "+treeName,600,400)
+    # create a histogram that is owned by the canvas
+    h=ROOT.TH1F("leading_jet_pt_"+treeName,"leading jet pT "+treeName+" [GeV]",48,20.0,500.0)
+    # tell the histogram to remember the weights
+    h.Sumw2()
+    # fill histogram
+    # loop over all events in the tree
+    for i in range(0,nrEvents):
+        if debug:
+            print("i",i)
+        tree.GetEntry(i)
+        jet_pt=getattr(tree,"jet_pt")
+        # jet_pt is a collections of jets
+        # I checked they appeared in decreasing order of pt in MeV
+        # leading jet has index 0
+        leading_jet_pt=jet_pt[0]*0.001 # convert from MeV to GeV
+        if debug:
+            print("i",i,"nrJet",len(jet_pt),"leading_jet_pt",leading_jet_pt)
+        # fill histogram
+        h.Fill(leading_jet_pt)
+    # done loop over events
+    # draw histogram
+    if debug or verbose:
+        print("h nrEntries "+treeName,h.GetEntries())
+        print("h Integral "+treeName,h.Integral())
+    # normalized histogram (integral becomes 1.0, interpret as probabillity distribution)
+    h.Scale(1.0/h.Integral())
+    if debug or verbose:
+        print("after normalizing h Integral "+treeName,h.Integral())
+    #  draw the histogram on the canvas
+    h.Draw("hist")
+    # save the canvas in a file in both .png and .pdf
+    outputFileName="./output/histo_leading_jet_pt_"+treeName
+    for extension in "png,pdf".split(","):
+        c.SaveAs(outputFileName+"."+extension)
+    # done for loop over extension
+# done function
     
 def doItAll():
     if debug:
+        print("start doItAll()")
         print("inputFileName",inputFileName)
     # done if
     inFile = ROOT.TFile.Open(inputFileName ,"READ")
-
-    #####################################################
-    ####### do all for the nominal tree #################
-    #####################################################
-    #
-    treeNominal = inFile.Get("nominal")
-    nrEventsNominal=treeNominal.GetEntries()
-    if debug:
-        print("nominal",nrEventsNominal)
-
-    # create a canvas
-    c=ROOT.TCanvas("c_leading_jet_pt_nominal","c_leading_jet_pt nominal",600,400)
-    # create a histogram that is owned by the canvas
-    histo_leading_jet_pt=ROOT.TH1D("leading_jet_pt_nominal","leading jet pT nominal [MeV]",48,20e3,500e3)
-    # tell the histogram to remember the weights
-    histo_leading_jet_pt.Sumw2()
-    # loop over all the elements (i.e. events) in the tree called "nominal"
-    for i in range(0,nrEventsNominal):
-        # if we want to run only on a few events
-        if i!=4:
-            continue
-        treeNominal.GetEntry(i)
+    for treeName in list_treeName:
         if debug:
-            print("i",i)
-            met=getattr(treeNominal,"met_met")
-            print("i",i,"met",met,type(met))
-        jet_pt=getattr(treeNominal,"jet_pt")
-        if debug:
-            print("i",i,"jet_pt",type(jet_pt))
-        # with code below I looked at the output and confirmed that the leading jet has index zero
-        if debug:
-            nrJet=len(jet_pt)
-            print("i",i,"jet_pt",type(jet_pt),"nrJet",nrJet)
-            for j in range(0,nrJet):
-                print("jet",j,"with pt",jet_pt[j])
-        leading_jet_pt=jet_pt[0]
-        if debug:
-            print("leading_jet_pt",leading_jet_pt)
-        # fill the histogram for each event with the leading_jet_pt of the event
-        histo_leading_jet_pt.Fill(leading_jet_pt)
-    # done loop over all events
-    # now we can print how many entries are filled in the histogram
-    # it should be as many as events in the tree
-    print("histo_leading_jet_pt for nrEntriesNominal",histo_leading_jet_pt.GetEntries())
-    # normalized histogram (integral becomes 1.0, interpret as probabillity distribution)
-    histo_leading_jet_pt.Scale(1.0/histo_leading_jet_pt.Integral())
-    # draw the histogram on the canvas
-    histo_leading_jet_pt.Draw("hist")
-    # save the canvas in a file in both .png and .pdf
-    outputFileName="./output/histo_leading_tree_nominal"
-    c.SaveAs(outputFileName+".png")
-    c.SaveAs(outputFileName+".pdf")
-        
-    #####################################################
-    ####### do all for the particleLevel tree ###########
-    #####################################################
-    
-    treeParticleLevel = inFile.Get("particleLevel")
-    nrEventsParticleLevel=treeParticleLevel.GetEntries()
-    if debug:
-        print("particleLevel",nrEventsParticleLevel)
-    # create a canvas
-    c=ROOT.TCanvas("c_leading_jet_pt_particleLevel","leading_jet_pt particleLevel",600,400)
-    # create a histogram that is owned by the canvas
-    histo_leading_jet_pt=ROOT.TH1D("leading_jet_pt_particleLevel","leading jet pT particleLevel [MeV]",48,20e3,500e3)
-    # tell the histogram to remember the weights
-    histo_leading_jet_pt.Sumw2()
-    # loop over all the elements (i.e. events) in the tree called "particleLevel"
-    for i in range(0,nrEventsParticleLevel):
-        if i!=8:
-            continue
-        treeParticleLevel.GetEntry(i)
-        if debug:
-            print("i",i)
-            met=getattr(treeParticleLevel,"met_met")
-            print("i",i,"met",met,type(met))
-        jet_pt=getattr(treeParticleLevel,"jet_pt")
-        if debug:
-            print("i",i,"jet_pt",type(jet_pt))
-        # with code below I looked at the output and confirmed that the leading jet has index zero
-        if debug:
-            nrJet=len(jet_pt)
-            print("i",i,"jet_pt",type(jet_pt),"nrJet",nrJet)
-            for j in range(0,nrJet):
-                print("jet",j,"with pt",jet_pt[j])
-        leading_jet_pt=jet_pt[0]
-        if debug:
-             print("leading_jet_pt",leading_jet_pt)
-        # fill the histogram for each event with the leading_jet_pt of the event
-        histo_leading_jet_pt.Fill(leading_jet_pt)
-    # done loop over all events
-    # now we can print how many entries are filled in the histogram
-    # it should be as many as events in the tree
-    print("histo_leading_jet_pt nrEntries for particleLevel",histo_leading_jet_pt.GetEntries())
-    # normalized histogram (integral becomes 1.0, interpret as probabillity distribution)
-    histo_leading_jet_pt.Scale(1.0/histo_leading_jet_pt.Integral())
-    # draw the histogram on the canvas
-    histo_leading_jet_pt.Draw("hist")
-    # save the canvas in a file in both .png and .pdf
-    outputFileName="./output/histo_leading_tree_particleLevel"
-    c.SaveAs(outputFileName+".png")
-    c.SaveAs(outputFileName+".pdf")
-        
+            print("treeName",treeName)
+        doItForOneTree(inFile,treeName,debug)
+    # done for loop over treeName
 # done function
 
-
-
-    
-
-    
+# run
 start()
 doItAll()
 end()
