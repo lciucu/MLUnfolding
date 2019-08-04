@@ -7,8 +7,8 @@ import numpy as np
 
 debug=False
 verbose=True
-#list_treeName=["nominal","particleLevel"]
-list_treeName=["nominal"]
+list_treeName=["nominal","particleLevel"]
+#list_treeName=["nominal"]
 
 
 # relative path
@@ -82,6 +82,7 @@ def doItForOneTree(inFile,treeName,debug):
     np.save("./output/nparray_binContent_"+treeName,nparray_binContent)
     test=np.load("./output/nparray_binContent_"+treeName+".npy")
     print("test",type(test),test.shape,test)
+    
     #  draw the histogram on the canvas
     h.Draw("hist")
     # save the canvas in a file in both .png and .pdf
