@@ -143,7 +143,7 @@ print("g",type(g),g.shape,np.min(g),np.max(g),g)
 print("r",type(r),r.shape,np.min(r),np.max(r),r)
 print("r2",type(r2),r2.shape,np.min(r2),np.max(r2),r2)
 
-exit()
+
 g,r,r2= gen(lambda x: ff(x),2000000,smear=smear)
 gt,rt,rt2 = gen(lambda x: ff(x),20000,smear=smear)
 gf,rf,rf2 = gen(lambda x: fun(x),2000000,smear=smear)
@@ -186,16 +186,24 @@ gcat = keras.utils.to_categorical(g,NBins)
 gtcat = keras.utils.to_categorical(gt,NBins)
 gfcat = keras.utils.to_categorical(gf)
 
+print("gt",gt,"NBins",NBins)
+print("gtcat",gtcat,gtcat.shape)
+print("gf",gf,"NBins",NBins)
+print("gfcat",gfcat,gfcat.shape)
+print("r",r,r.shape)
 r = r.reshape(r.shape[0],1,1)
-print("r.shape",r.shape)
-
+print("r",r,r.shape)
+print("rt",rt,rt.shape)
 rt = rt.reshape(rt.shape[0],1,1)
+print("rt",rt,rt.shape)
+print("rf",rf,rf.shape)
 rf = rf.reshape(rf.shape[0],1,1)
+print("rf",rf,rf.shape)
 
-#exit()
+exit()
 # Fit the model
 h = model.fit(rf,gfcat,batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(rt,gtcat))
-
+exit()
 # save model,if needed
 model.save("model.hdf5")
 
