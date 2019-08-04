@@ -5,7 +5,7 @@ import ROOT
 
 import numpy as np
 
-debug=True
+debug=False
 verbose=True
 #list_treeName=["nominal","particleLevel"]
 list_treeName=["nominal"]
@@ -33,7 +33,7 @@ def doItForOneTree(inFile,treeName,debug):
     # create a canvas
     c=ROOT.TCanvas("c_leading_jet_pt_"+treeName,"c_leading_jet_pt "+treeName,600,400)
     # create a histogram that is owned by the canvas
-    h=ROOT.TH1F("leading_jet_pt_"+treeName,"leading jet pT "+treeName+" [GeV]",48,20.0,500.0)
+    h=ROOT.TH1F("leading_jet_pt_"+treeName,"leading jet pT "+treeName+" [GeV]",500,0.0,500.0)
     # tell the histogram to remember the weights
     h.Sumw2()
     # fill histogram
@@ -60,6 +60,28 @@ def doItForOneTree(inFile,treeName,debug):
     h.Scale(1.0/h.Integral())
     if debug or verbose:
         print("after normalizing h Integral "+treeName,h.Integral())
+    # store bin content into a numpy array
+    list_binContent=[]
+    nrBin=h.GetNbinsX()
+    if debug or verbose:
+        print("nrBin",nrBin)
+    sum=0.0
+    # loop over the bins of the histogram, but not over the underflow (j=0) and overflow (nrBin+1)
+    for j in range(1,nrBin+1):
+        binContent=h.GetBinContent(j)
+        if debug:
+            print("j",j,"binContent",binContent)
+        sum+=binContent
+        list_binContent.append(binContent)
+    # done for loop over bins of histogram
+    nparray_binContent=np.array(list_binContent)
+    if debug or verbose:
+        print("sum",sum)
+        print("list_binContent",len(list_binContent),list_binContent)
+        print("nparray_binContent",nparray_binContent.shape,nparray_binContent)
+    np.save("./output/nparray_binContent_"+treeName,nparray_binContent)
+    test=np.load("./output/nparray_binContent_"+treeName+".npy")
+    print("test",type(test),test.shape,test)
     #  draw the histogram on the canvas
     h.Draw("hist")
     # save the canvas in a file in both .png and .pdf

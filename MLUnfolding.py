@@ -26,7 +26,7 @@ outputFolder="./output"
 #
 # Define initial function:
 #
-fun = lambda x : x**2
+fun = lambda x : 1
 
 # A sample function used for testing. The function has a minimum at x = 0 and x ~ 0.6 which creates extra difficulties for unfolding due to smearing into these regions.
 def ff(x):
@@ -37,11 +37,11 @@ def ff(x):
 # Plot the result
 #
 xi = np.linspace(0.,1.,100)
-print("xi",xi)
-print("ff(xi)",ff(xi))
+#print("xi",xi)
+#print("ff(xi)",ff(xi))
 plt.plot(xi,ff(xi))
 plt.savefig("./output/ffxi.png")
-print("fun(7)",fun(7))
+#print("fun(7)",fun(7))
 
 def p(name,value):
     print(name,type(value),value)
@@ -57,6 +57,9 @@ def gen(fun,N=200000,bins=10, xmin=0., xmax=1.0,smear=1., supersample=50, smear2
         The second variable uses log-normal distribution with smearing parameter of 
         The return parameters are binned truth and smeared reconstructed events.
     '''
+    print(" ")
+    print(" ")
+    print(" ")
     
     ifun = lambda x: scipy.integrate.quad(fun,0., x/xmax)[0]
     print("ifun",type(ifun),ifun)
@@ -69,28 +72,14 @@ def gen(fun,N=200000,bins=10, xmin=0., xmax=1.0,smear=1., supersample=50, smear2
     print("bins",type(bins),bins)
     print("supersample",type(supersample),supersample)
     print("NSample",type(NSample),NSample)
-
     #test
     
-    #vals = vfun(np.linspace(xmin, xmax, NSample+1))
     print("xmin",type(xmin),xmin)
     print("xmax",type(xmax),xmax)
     a=np.linspace(xmin, xmax, NSample+1)
     print("a",type(a),a.shape,a)
     vals=vfun(np.linspace(xmin, xmax, NSample+1))
     print("vals",type(vals),vals,vals.shape)
-
-    b=np.array([0,1,2,3])
-    c=np.sin(b)
-    f=lambda x:math.sin(x)
-    g=np.vectorize(f)
-    d=g(b)
-    p("b",b)
-    p("c",c)
-    p("d",d)
-    p("1:3",d[1:3])
-    p("1:-1",d[1:-1])
-   
     
     probs = vals[1:]-vals[:-1]# want to param
     p("probs",probs)
@@ -107,19 +96,17 @@ def gen(fun,N=200000,bins=10, xmin=0., xmax=1.0,smear=1., supersample=50, smear2
     p("probs",probs)
     p("sum",np.sum(probs))
     p("shape",probs.shape)
+    
 
 
     
     a = np.random.choice(NSample,N,p=probs)  # simulated events.
     p("a",a)
     print("a.shape",a.shape)
-    
+    print("a/supersample",a/supersample)
     asim = np.trunc(a/supersample)# output simulated bins
     p("asim",asim)
-
     
-    
-
     # Reconstructed vars:
     # apply additional gaussian smearing
     g = np.random.normal(0.,smear,N) + shift1
@@ -138,16 +125,25 @@ def gen(fun,N=200000,bins=10, xmin=0., xmax=1.0,smear=1., supersample=50, smear2
     #plt.show()
     plt.savefig(outputFolder+"/n.png")
     plt.close()
+    plt.hist(asim,bins=np.linspace(0,10,10))
+    plt.savefig(outputFolder+"/truth.png")
+    plt.close()
+    plt.hist((a+(g)*supersample)/supersample,bins=np.linspace(0,10,10))
+    plt.savefig(outputFolder+"/reco.png")
+    plt.close()
     
     return asim,(a+(g)*supersample)/supersample,(a*n+shift2)/supersample
 
+
 # Generate reference and two training samples
 smear = 0.5
-g,r,r2= gen(lambda x: ff(x),2000,smear=smear)
+g,r,r2= gen(lambda x: ff(x),200000,supersample=1,smear=smear)
 
-print("g",g,type(g),g.shape,"r",r,type(r),r.shape,"r2",r2,type(r2),r2.shape)
+print("g",type(g),g.shape,np.min(g),np.max(g),g)
+print("r",type(r),r.shape,np.min(r),np.max(r),r)
+print("r2",type(r2),r2.shape,np.min(r2),np.max(r2),r2)
 
-#exit()
+exit()
 g,r,r2= gen(lambda x: ff(x),2000000,smear=smear)
 gt,rt,rt2 = gen(lambda x: ff(x),20000,smear=smear)
 gf,rf,rf2 = gen(lambda x: fun(x),2000000,smear=smear)
@@ -203,7 +199,7 @@ h = model.fit(rf,gfcat,batch_size=batch_size,epochs=epochs,verbose=1,validation_
 # save model,if needed
 model.save("model.hdf5")
 
-
+#exit()
 
 # Prepare bootstrap replica to determine statistical uncertainties.
 def prepareBootstrap(rt,N=10):
