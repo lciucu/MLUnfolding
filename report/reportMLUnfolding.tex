@@ -1,0 +1,254 @@
+\documentclass[a4paper,11pt,twoside]{article}
+\usepackage[utf8x]{inputenc}
+\usepackage{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{wrapfig}
+\usepackage{subfig}
+\usepackage{hyperref}
+\usepackage{sidecap}
+\usepackage{theorem}
+\usepackage{thc}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{multirow}
+
+
+
+\setlength{\headheight}{15pt}
+
+\geometry{left=3 cm,right=3 cm, top=3.5 cm, bottom=3.5 cm}
+\fancyhf{}
+\fancyhead[RO,LE]{\footnotesize{\leftmark}}
+\fancyhead[LO,RE]{\thepage}
+
+\pagestyle{fancy}
+
+\renewcommand\maketitle{
+\begin{titlepage}
+
+ \begin{center}
+ 
+ \begin{figure}[htpb]
+\rule{1 \textwidth}{1pt}\\
+ \smallskip  
+ \end{figure}
+
+\vfill
+
+\textbf{
+\begin{huge}
+Machine learning for jet energy unfolding in ttbar analysis
+\end{huge}
+}
+
+\vspace{0.4cm}
+
+\begin{Large}
+ \textit{DESY Summer Student Programme, 2019}
+\end{Large}
+
+\vspace{1cm}
+
+
+\begin{tabular}{ccc}
+\LARGE{Luiza Adelina Ciucu} \vspace{0.15cm}\\
+\large{\textit{University of Geneva, Switzerland}}\\
+\end{tabular}
+
+
+
+
+  
+\vspace{0.7cm}
+\large{Supervisor\\Thorsten Khul, Yichen Li}\\
+\vspace{0.7cm}
+%\includegraphics[width=0.33\textwidth]{group.png}\\
+\vspace{0.7cm}
+\Large{\today}
+
+\end{center}
+
+\vfill
+
+\begin{abstract}
+%Measuring the top-quark properties is key to test the validity of the Standard Model. Top quark is the heaviest elementary particle and it has the largest Yukawa coupling. The deviations in the top quark properties from the Standard Model predictions (e.g. differential cross sections) implies the existence of new physics Beyond the Standard Model . We can consider the LHC a top quark factory.
+\end{abstract}
+
+
+\vfill
+
+
+  \begin{center}
+ \rule{1 \textwidth}{1pt}\\
+ \end{center}
+
+% Please choose eg eps or jpg if you work with latex2pdf or not
+\begin{figure}[htbp]
+     \begin{minipage}{0.33\textwidth}
+      \centering
+      \includegraphics[width=.5\columnwidth]{university.png}
+     \end{minipage}\hfill
+%     \begin{minipage}{0.33\textwidth}
+%      \centering
+%      \includegraphics[width=1\columnwidth]{logos/logo_blau.eps}
+%     \end{minipage}
+     \begin{minipage}{0.33\textwidth}
+      \centering
+      \includegraphics[width=.5\columnwidth]{desy.png}
+     \end{minipage}
+   \end{figure}
+
+\end{titlepage}}
+
+\begin{document}
+
+
+
+\maketitle
+
+
+
+\tableofcontents
+\newpage
+\setcounter{page}{1}
+
+\section{Introduction}
+
+This is my first paragraph.
+
+\end{document}
+
+%%%%%%%%%%%%%%%
+%%% example code
+%%%%%%%%%%%%%%%
+
+\section{Introduction}
+
+\subsection{Part 1...}
+
+\paragraph{}
+Here new paragraph starts...........
+\paragraph{}
+Here new paragraph starts...........
+\paragraph{}
+Here new paragraph starts........... \\
+
+\newpage
+		
+Equation:
+	
+\begin{equation}
+% \langle t_f q_f | t_i q_i \rangle = 
+\lim_{\substack{\epsilon \rightarrow
+0\\N\rightarrow \infty}} \int \dots \int \mbox{d}q_1 \dots \mbox{d}q_{N-1} \frac{\mbox{d}p_1}{2 \pi
+\hbar} \dots \frac{\mbox{d}p_N}{2 \pi \hbar}\exp{\left( \frac{i}{\hbar} \sum_{j=1}^N
+\left[ p_j (q_j - q_{j-1}) - \epsilon H\left(pj, \frac{q_j +
+q_{j-1}}{2}\right)\right]\right)}
+\end{equation}
+\vspace{2cm}
+\begin{align}
+ \lim_{\substack{\epsilon \rightarrow 0 \\ N\rightarrow \infty}} \frac{i}{\hbar}
+\epsilon \sum_{j=1}^N \left[p_j \left(\frac{q_j-q_{j-1}}{\epsilon}\right) - H\left( p_j,
+\frac{q_j+q_{j-1}}{2}\right) \right] &= \frac{i}{\hbar} \int_{t_i}^{t_f} \mbox{d}t \left( p
+\dot{q}-H(p,q)\right) \nonumber\\ 
+&= \frac{i}{\hbar} \int_{t_i}^{t_f} \mbox{d}t L = \frac{i}{\hbar} S[q]
+\end{align}
+\vspace{2cm}
+
+Table:
+
+Consider the following mesons $\eta$, $\eta'$ and $K$ and their quark content\footnote{The mesons
+are actually a superposition of these quarks.}:
+\begin{center}
+\begin{tabular}{c|c|c}
+ meson & composition & approx. mass\\ \hline
+$K^0$ &  $d\bar{s} \, , \,s\bar{d}$ &  $498 \mbox{MeV}$\\
+$K^{+}$ & $u\bar{s}$ & $494 \mbox{MeV}$\\
+$K^{-}$ & $s \bar{u}$ & $494 \mbox{MeV}$  \\
+$\eta$ & $u \bar{u} \, , \, d \bar{d} \, , \, s \bar{s}$ & $548 \mbox{MeV}$ \\
+$\eta'$ & $u \bar{u} \, , \, d \bar{d} \, , \, s \bar{s}$ & $958 \mbox{MeV}$ 
+\end{tabular}
+\end{center}
+
+
+\newpage
+	
+Plot:
+
+\begin{figure}[h]
+\subfloat{\includegraphics[width=0.495\textwidth]{figure.jpg}}%\label{corr_and_rate-left}}
+\subfloat{\includegraphics[width=0.495\textwidth]{figure.jpg}}%\label{corr_and_rate-right}}
+\caption{Left: correlation for different $d$ ; Right: acceptance rate and
+autocorrelation time for different $d$}
+\label{corr_and_rate}
+\end{figure}
+
+\newpage
+		
+\subsection{Part 2...}
+
+\paragraph{}
+Here new paragraph starts...............................................................
+...........................................................................................
+..........................................................................................
+...........................................................................................
+\paragraph{}
+Here new paragraph starts..........................................................................
+...........................................................................................
+..........................................................................................
+...........................................................................................
+\paragraph{}
+Here new paragraph starts..........................................................................
+...........................................................................................
+..........................................................................................
+........................................................................................... \\
+
+\section{Conclusions}
+
+Some text here..............................................................................
+
+\section*{Acknowledgements}
+
+Some text here..............................................................................
+
+\begin{thebibliography}{11}
+\bibitem{creutz}
+M. Creutz and B. Freedman, \textit{A Statistical Approach to Quantum Mechanics}, Annals of Physics,
+\textbf{132}, 427-462 (1981).
+\bibitem{nagashima}
+Yorikiyo Nagashima, Yoichiro Nambu, \textit{Elementary Particle Physics Volume 1: Quantum Field
+Theory and Particles}, (WILEY-VCH, 2010)
+\bibitem{FORTRAN}
+W. H. Press, S. A. Teukolsky, W. T. Vetterling, B. P. Flannery, \textit{Numerical Recipes in
+FORTRAN - The Art of Scientific Computing, 2nd Ed.} (Cambridge University Press, 1992)
+\bibitem{buendia}
+G. M. Buend\'{i}a, \textit{Comparison between the Langevin and the hybrid simulation techniques for
+a free field theory}, J. Phys. A: Math. Gen. \textbf{22}, 5065-5072 (1989).
+\bibitem{tapei}
+T. Cheung and L. Li, \textit{Gauge theory of elementary particle physics}, (Oxford University
+Press, 1984)
+\bibitem{degrand}
+T. DeGrand and C. DeTar, \textit{Lattice Methods for Quantum Chromodynamics}, (World Scientific,
+2006)
+\bibitem{topoactions}
+W. Bietenholz, U. Gerber, M. Pepe, U.-J. Wiese, \textit{Topological Lattice Actions},
+arXiv:1009.2146v4 [hep-lat] (20 Dec 2010)
+\bibitem{openbcs}
+M. L\"{u}scher, S. Schaefer, \textit{Lattice QCD without topology barriers},
+CERN-PH-TH-2011-116, 26pp (May 2011)
+\bibitem{Crecipes}
+W. H. Press, S. A. Teukolsky, W. T. Vetterling, B. P. Flannery, \textit{Numerical Recipes in
+C - The Art of Scientific Computing, 2nd Ed.} (Cambridge University Press, 1992)
+\bibitem{andreas}
+A. Nube, private communication.
+\bibitem{wolff}
+U. Wolff, \textit{Critical Slowing Down}, Nuclear Physics B (Proc. Suppl.) \textbf{17}, 93-102
+(1990).
+\end{thebibliography}
+\end{document}
