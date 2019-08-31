@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 #### configuration options
 #########################################################################################################
 
-debug=True
+debug=False
 verbose=True
 
 # we split the code into stages, so that we can run only the last stage for instance
@@ -33,14 +33,16 @@ verbose=True
 # stage 1: read .root file and produce numpy arrays that are input and output to the NN training
 # stage 1: input: .root file; output: rf, rt, gfcat, gtcat
 # stage 2: use the rf, rt, gfcat, gtcat to produce a NN training and store the model weights to a file
-
+# stage 3: use the NN to do further studies - not yet done
+# stage 4: make plots of the NN training - done
 #string_stage="1111"
 #string_stage="0000"
 #string_stage="1000"
 #string_stage="0100"
 #string_stage="0010"
-string_stage="0001"
-#string_stage="1101"
+#string_stage="0001"
+string_stage="1101"
+#string_stage="0101"
 
 list_stage=list(string_stage)
 doROOTRead=bool(int(list_stage[0]))
@@ -64,9 +66,7 @@ if doROOTRead:
 if doROOTRead or doNNTrain or doNNAnalyze:
     import keras
 
-doROOTReadTest=True
-
-
+doROOTReadTest=False
 
 # initial input file, with the same number of reco and truth jets
 inputFileName="/afs/cern.ch/user/l/lciucu/public/data/MLUnfolding/user.yili.18448069._000001.output.sync.root"
@@ -83,45 +83,33 @@ if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
 
 # output
-outputFolderName="./output7"
-extensions="pdf,png"
+outputFolderName="./output8"
+# extensions="pdf,png"
+extensions="png"
 
 # for DNN training with Keras
-doTrainNN=True
-# the order is kappa (from architecture), epochs, batchSize, (from learning steps)
-list_infoNN=[
-    #
-    #[8,200,1000],
-    #[4,200,1000],
-    #[2,200,1000],
-    #[2,200,1000],
-    #[1,200,1000],
-    #
-    #[8,1000,1000],
-    #[4,1000,1000],
-    #[2,1000,1000],
-    #[1,1000,1000],
-    #
-    #[8,5000,1000],
-    #[4,5000,1000],
-    #[2,5000,1000],
-    #[1,5000,1000],
-    #
-]
-
-# for test
+# the order is layer and kappa (from architecture), epochs, batchSize (from learning steps)
 if True:
     list_infoNN=[
-        [1,300,1000],
-        #[2,300,1000],
-        [4,300,1000],
-        [8,300,1000],
-        [1,200,1000],
-        #[2,200,1000],
-        [4,200,1000],
-        [8,200,1000],
-    ]
-# done if
+        ["A1",8,300,1000],
+        #["B1",8,300,1000],
+        #["B2",8,300,1000],
+        #["B3",8,300,1000],
+        #["B4",8,300,1000],
+        ["B5",8,300,1000],
+        #["B10",8,300,1000],
+        #["C5",8,300,1000],
+        #["D5",8,300,1000],
+]
+
+list_listInfoToPlot=[
+    #["A1_B1_B2_B3_B4_B5_B10",[ ["A1",8,300,1000],["B1",8,300,1000],["B2",8,300,1000],["B3",8,300,1000],["B4",8,300,1000],["B5",8,300,1000],["B10",8,300,1000] ]],
+    #["B1_B2_B3_B4_B5_B10",[ ["B1",8,300,1000],["B2",8,300,1000],["B3",8,300,1000],["B4",8,300,1000],["B5",8,300,1000],["B10",8,300,1000] ]],
+    #["B1_B2_B3_B4_B5",[ ["B1",8,300,1000],["B2",8,300,1000],["B3",8,300,1000],["B4",8,300,1000],["B5",8,300,1000] ]],
+    #["B5_C5_D5",[ ["B5",8,300,1000],["C5",8,300,1000],["D5",8,300,1000] ]],
+    ["A1_B5",[ ["A1",8,300,1000],["B5",8,300,1000] ]],
+]
+
 
 list_metric=[
     "loss",
@@ -129,8 +117,8 @@ list_metric=[
 ]
 
 dict_metric_plotRange={
-    "loss":[1.70,4.0],
-    "accuracy":[0.0,0.4]
+    "loss":[1.70,3.8],
+    "accuracy":[0.05,0.45]
 }
 
 list_optionTrainTest=[
@@ -139,23 +127,25 @@ list_optionTrainTest=[
 ]
 
 # https://stackoverflow.com/questions/22408237/named-colors-in-matplotlib
-list_color="r,b,g,k,c,m".split(",")
+# https://i.stack.imgur.com/lFZum.png
+list_color="r-,b-,g-,k-,r--,b--,g--,k--".split(",")
 
 #########################################################################################################
 #### Functions general
 #######################################################################################################
 
 def get_from_infoNN(infoNN):
-    kappa=infoNN[0]
-    nrEpoch=infoNN[1]
-    batchSize=infoNN[2]
+    layer=infoNN[0]
+    kappa=infoNN[1]
+    nrEpoch=infoNN[2]
+    batchSize=infoNN[3]
     if verbose:
-        print("Start do NN part for","kappa",str(kappa),"nrEpoch",str(nrEpoch),"batchSize",str(batchSize))
-    fileNameStem="kappa_"+str(kappa)+"_nrEpoch_"+str(nrEpoch)+"_batchSize_"+str(batchSize)
+        print("Start do NN part for","layer",layer,"kappa",str(kappa),"nrEpoch",str(nrEpoch),"batchSize",str(batchSize))
+    fileNameStem="layer_"+layer+"_kappa_"+str(kappa)+"_nrEpoch_"+str(nrEpoch)+"_batchSize_"+str(batchSize)
     if debug:
         print("fileNameStem",fileNameStem)
     # done if
-    return fileNameStem,kappa,nrEpoch,batchSize
+    return fileNameStem,layer,kappa,nrEpoch,batchSize
 # done function
 
 # a general function to print the values and other properties of a numpy array
@@ -340,12 +330,12 @@ def get_input_and_output_for_NN(inputFileName):
 # definition of the model using 3-layer neural network
 # https://keras.io/getting-started/sequential-model-guide/
 # https://keras.io/layers/core/
-def prepare_NN_model(NBins,nvar=1,kappa=8):
+def prepare_NN_model(NBins,nvar=1,layer="A",kappa=8):
     ''' Prepare KERAS-based sequential neural network with for ML unfolding. 
         Nvar defines number of inputvariables. NBins is number of truth bins. 
         kappa is an empirically tuned parameter for the intermediate layer'''
     if verbose or debug:
-        print("Start prepareModel with number of variables",nvar,"NBins",NBins,"kappa",kappa)
+        print("Start prepareModel with number of variables",nvar,"NBins",NBins,"layer",layer,"kappa",kappa)
     # constructor of the model with Sequential() 
     # Read more about the options and commands available here: https://keras.io/models/sequential/
     model=keras.models.Sequential()
@@ -357,8 +347,57 @@ def prepare_NN_model(NBins,nvar=1,kappa=8):
     # here do we flatten the first layer
     # Flatten(): https://stackoverflow.com/questions/44176982/how-flatten-layer-works-in-keras?rq=1
     model.add(keras.layers.Flatten())
-    # add the second layer with a relu activation function
-    model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    # add the the inner layers with a relu activation function
+    # the default from the initial code example with toy data was option A
+    if layer=="A1":
+        model.add(keras.layers.Dense(kappa*NBins**2,activation='relu'))
+    elif layer=="B1":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="B2":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="B3":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="B4":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="B5":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="B10":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="C5":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(int(0.5*kappa)*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="D5":
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(2*kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    else:
+        print("layer",layer,"not known. Choose A1,B1,B2,B3,B4,B5,B10,C5,D5. Will ABORT!!!")
+        assert(False)
+    # done if
     # add the thir layer, or the output, with a softmax activation function
     # softmax function: https://medium.com/data-science-bootcamp/understand-the-softmax-function-in-minutes-f3a59641e86d
     model.add(keras.layers.Dense(NBins,activation='softmax'))
@@ -406,8 +445,12 @@ def train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt):
     fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
     # 
     if doNNTrain:
+        if verbose:
+            print("Start train NN for",fileNameStem)
         # fit the model
         h=model.fit(rf,gfcat,batch_size=batchSize,epochs=nrEpoch,verbose=1,validation_data=(rt,gtcat))
+        if verbose:
+            print("  End train NN for",fileNameStem)
         # the object h will remember the history of the loss and accuracy for each epoch
         # we retrieve these as numpy arrays from h and will store them in files
         # so that we can update the style of plots without having to do all the NN training again
@@ -524,12 +567,11 @@ def overlayGraphsValues(list_tupleArray,outputFileName="overlay",extensions="pdf
 # done function
 
 
-
 def get_dict_name_nparray(list_infoNN):
     dict_name_nparray={}
     # dict_name_nparray["test"]=np.array(range(50))
     for infoNN in list_infoNN:
-        fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         # load the numpy arrays of the losses, accuracies and nrEpoch from files
         fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
         dict_name_nparray[fileNameStem+"_loss_train"]=np.load(fileNameLossTrain)
@@ -552,15 +594,16 @@ def overlay_train_test(dict_name_nparray):
     # for each NN and  for each of "loss" and "accuracy", overlay train vs test
     # loop over the NN configurations
     for infoNN in list_infoNN:
-        fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         # loop over "loss" and "accuracy"
         for metric in list_metric:
             plotRange=dict_metric_plotRange[metric]
             # create the tuple of arrays to plot
             list_tupleArray=[]
             for i,optionTrainTest in enumerate(list_optionTrainTest):
-                color=list_color[i] # e.g. r
-                optionPlot=color+"-" # e.g. r-
+                color=list_color[i] # e.g. r-
+                # optionPlot=color+"-" # e.g. r-
+                optionPlot=color # e.g. r--
                 list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],optionPlot,optionTrainTest))
             # done for loop over optionTrainTest
             outputFileName=outputFolderName+"/NN_plot_"+fileNameStem+"_"+metric
@@ -578,21 +621,25 @@ def overlay_infoNN(dict_name_nparray):
     for metric in list_metric:
         plotRange=dict_metric_plotRange[metric]
         for optionTrainTest in list_optionTrainTest:
-            # create the tuple of arrays to plot
-            list_tupleArray=[]
-            # loop over the NN configurations
-            for i,infoNN in enumerate(list_infoNN):
-                fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
-                color=list_color[i] # e.g. r
-                optionPlot=color+"-" # e.g. r-
-                list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],optionPlot,fileNameStem))
-            # done for loop over infoNN
-            outputFileName=outputFolderName+"/NN_plot_"+metric+"_"+optionTrainTest
-            overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
-                                info_x=["Number of epochs",[-1,-1],"linear"],
-                                info_y=["Value of the "+metric+" function",plotRange,"linear"],
-                                info_legend=["best"],title="optionTrainTest="+optionTrainTest,debug=False)
-
+            for listInfoToPlot in list_listInfoToPlot:
+                name=listInfoToPlot[0]
+                my_list_infoNN=listInfoToPlot[1]
+                # create the tuple of arrays to plot
+                list_tupleArray=[]
+                # loop over the NN configurations
+                for i,infoNN in enumerate(my_list_infoNN):
+                    fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                    color=list_color[i] # e.g. r-
+                    optionPlot=color # e.g. r-
+                    list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],
+                                            optionPlot,fileNameStem))
+                # done for loop over infoNN
+                outputFileName=outputFolderName+"/NN_plot_"+metric+"_"+optionTrainTest+"_NN_"+name
+                overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
+                                    info_x=["Number of epochs",[-1,-1],"linear"],
+                                    info_y=["Value of the "+metric+" function",plotRange,"linear"],
+                                    info_legend=["best"],title="optionTrainTest="+optionTrainTest+" NN="+name,debug=False)
+            # do for loop over listInfoToPlot
         # done for loop over metric
     # done for loop over list_info
 # done function
@@ -605,22 +652,15 @@ def overlay_infoNN(dict_name_nparray):
 # the function that runs everything
 def doItAll():
     gfcat,gtcat,rf,rt=get_input_and_output_for_NN(inputFileName)    
-    # train and study several neural networks
-    # different architectures coming from different kappa
-    # different learning steps coming from different batchSize and number of nrEpoch
-    # by doing a for loop over different options
+    # loop over different NN that we compare (arhitecture and learning)
     for infoNN in list_infoNN:
-        fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         if doNNTrain or doNNAnalyze:
-            # create the untrained deep neural network (DNN) model
-            # architecture coming from the layers that appear with .add()
-            # learning methods from .compile()
-            model=prepare_NN_model(NBins,nvar=1,kappa=kappa)
-            # get the trained DNN model either by training or by loading the trained model
-            # we take the previous model as input and the function will change it to have the weights after training
+            # create empty train model architecture (bad initial weights)
+            model=prepare_NN_model(NBins,nvar=1,layer=layer,kappa=kappa)
+            # train the NN
             train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt)
-            # now the model contains the trained data
-        continue
+            # now the model contains the trained data (with the good weights)
     # done for loop over infoNN
     if doPlot:
         dict_name_nparray=get_dict_name_nparray(list_infoNN)
