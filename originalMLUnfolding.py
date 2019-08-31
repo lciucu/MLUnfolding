@@ -6,12 +6,11 @@ from __future__ import print_function
 import matplotlib.pyplot as plt
 import scipy.integrate 
 import numpy as np
-import math 
 
-#KERAS imports:
+# KERAS imports:
 import keras
 from keras.models import Sequential
-from keras.layers import Dense,Flatten,Dropout
+from keras.layers import Dense,Flatten
 from keras import backend as K
 
 # Set basic parameters used for the followng examples
@@ -20,9 +19,6 @@ num_classes = 10
 NBins = num_classes
 epochs = 50
 smear = 0.5
-
-outputFolder="./output"
-
 #
 # Define initial function:
 #
@@ -37,15 +33,7 @@ def ff(x):
 # Plot the result
 #
 xi = np.linspace(0.,1.,100)
-#print("xi",xi)
-#print("ff(xi)",ff(xi))
 plt.plot(xi,ff(xi))
-plt.savefig("./output/ffxi.png")
-#print("fun(7)",fun(7))
-
-def p(name,value):
-    print(name,type(value),value)
-
 
 # Simple event generator to produce test (pseudo-data) and training samples. The sampling is based on the input function given by parameter fun where fun can be constant (flat prior) or any other function. The input function is modified during the unfolding from iteration to iteration.
 def gen(fun,N=200000,bins=10, xmin=0., xmax=1.0,smear=1., supersample=50, smear2=0.25, shift1=0., shift2=-0.5):
@@ -57,93 +45,26 @@ def gen(fun,N=200000,bins=10, xmin=0., xmax=1.0,smear=1., supersample=50, smear2
         The second variable uses log-normal distribution with smearing parameter of 
         The return parameters are binned truth and smeared reconstructed events.
     '''
-    print(" ")
-    print(" ")
-    print(" ")
     
     ifun = lambda x: scipy.integrate.quad(fun,0., x/xmax)[0]
-    print("ifun",type(ifun),ifun)
-    
     vfun = np.vectorize(ifun)
-    print("vfun",type(vfun),vfun)
-    
 
-    NSample = bins*supersample  # finer sampling 
-    print("bins",type(bins),bins)
-    print("supersample",type(supersample),supersample)
-    print("NSample",type(NSample),NSample)
-    #test
-    
-    print("xmin",type(xmin),xmin)
-    print("xmax",type(xmax),xmax)
-    a=np.linspace(xmin, xmax, NSample+1)
-    print("a",type(a),a.shape,a)
-    vals=vfun(np.linspace(xmin, xmax, NSample+1))
-    print("vals",type(vals),vals,vals.shape)
-    
-    probs = vals[1:]-vals[:-1]# want to param
-    p("probs",probs)
-    p("probs<0",probs<0)
-
-
-
-    
+    NSample = bins*supersample  # finer sampling
+    vals = vfun(np.linspace(xmin, xmax, NSample+1))
+    probs = vals[1:]-vals[:-1]# want to param 
     probs = np.where(probs<0,0,probs)
-    p("probs",probs)
-
-    p("sum",np.sum(probs))
     probs = probs/np.sum(probs)
-    p("probs",probs)
-    p("sum",np.sum(probs))
-    p("shape",probs.shape)
-    
-
-
-    
     a = np.random.choice(NSample,N,p=probs)  # simulated events.
-    p("a",a)
-    print("a.shape",a.shape)
-    print("a/supersample",a/supersample)
-    asim = np.trunc(a/supersample)# output simulated bins
-    p("asim",asim)
-    
+    asim = np.trunc(a/supersample)                   # output simulated bins
+
     # Reconstructed vars:
     # apply additional gaussian smearing
     g = np.random.normal(0.,smear,N) + shift1
     n = np.random.lognormal(0.,0.25,N)
-    p("g",g)
-    p("n",n)
-    plt.hist(a,bins = np.arange(10))
-    #plt.show()
-    plt.savefig(outputFolder+"/a.png")
-    plt.close()
-    plt.hist(g,bins = np.linspace(-2,2,40))
-    #plt.show()
-    plt.savefig(outputFolder+"/g.png")
-    plt.close()
-    plt.hist(n,bins = np.linspace(-2,2,40))
-    #plt.show()
-    plt.savefig(outputFolder+"/n.png")
-    plt.close()
-    plt.hist(asim,bins=np.linspace(0,10,10))
-    plt.savefig(outputFolder+"/truth.png")
-    plt.close()
-    plt.hist((a+(g)*supersample)/supersample,bins=np.linspace(0,10,10))
-    plt.savefig(outputFolder+"/reco.png")
-    plt.close()
-    
     return asim,(a+(g)*supersample)/supersample,(a*n+shift2)/supersample
-
 
 # Generate reference and two training samples
 smear = 0.5
-g,r,r2= gen(lambda x: ff(x),200000,supersample=1,smear=smear)
-
-print("g",type(g),g.shape,np.min(g),np.max(g),g)
-print("r",type(r),r.shape,np.min(r),np.max(r),r)
-print("r2",type(r2),r2.shape,np.min(r2),np.max(r2),r2)
-
-
 g,r,r2= gen(lambda x: ff(x),2000000,smear=smear)
 gt,rt,rt2 = gen(lambda x: ff(x),20000,smear=smear)
 gf,rf,rf2 = gen(lambda x: fun(x),2000000,smear=smear)
@@ -153,70 +74,45 @@ def prepareModel(nvar=1, NBins=NBins, kappa=8):
     ''' Prepare KERAS-based sequential neural network with for ML unfolding. 
         Nvar defines number of inputvariables. NBins is number of truth bins. 
         kappa is an empirically tuned parameter for the intermediate layer'''
-
-    
     model = Sequential()
-    
     model.add(Dense(nvar,activation='linear',input_shape=(nvar,1)))
-
-    print("model",model)
-  
-    
     model.add(Flatten())
     model.add(Dense(kappa*NBins**2,activation='relu'))
     
-    #model.add(Dropout(0.25))
-    #model.add(Dense(2*NBins,activation='relu'))
-    #model.add(Dropout(0.5))
+    # model.add(Dropout(0.25))
+    # model.add(Dense(2*NBins,activation='relu'))
+    # model.add(Dropout(0.5))
     model.add(Dense(NBins,activation='softmax'))
     model.compile(loss=keras.losses.categorical_crossentropy,
-                  optimizer=keras.optimizers.Adadelta(),
-                  metrics=['accuracy'])
+              optimizer=keras.optimizers.Adadelta(),
+              metrics=['accuracy'])
     return model
-
 
 # Prepare the model with one input variable
 model = prepareModel(1)
-print("luiza");
-#exit()
-
 
 # Prepare inputs for keras
 gcat = keras.utils.to_categorical(g,NBins)
 gtcat = keras.utils.to_categorical(gt,NBins)
 gfcat = keras.utils.to_categorical(gf)
 
-print("gt",gt,"NBins",NBins)
-print("gtcat",gtcat,gtcat.shape)
-print("gf",gf,"NBins",NBins)
-print("gfcat",gfcat,gfcat.shape)
-print("r",r,r.shape)
 r = r.reshape(r.shape[0],1,1)
-print("r",r,r.shape)
-print("rt",rt,rt.shape)
 rt = rt.reshape(rt.shape[0],1,1)
-print("rt",rt,rt.shape)
-print("rf",rf,rf.shape)
 rf = rf.reshape(rf.shape[0],1,1)
-print("rf",rf,rf.shape)
 
-exit()
 # Fit the model
 h = model.fit(rf,gfcat,batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(rt,gtcat))
-exit()
+
 # save model,if needed
 model.save("model.hdf5")
-
-#exit()
 
 # Prepare bootstrap replica to determine statistical uncertainties.
 def prepareBootstrap(rt,N=10):
     ''' Prepare bootstrap weights, for error statistical and correlation estimation '''
     Nev = rt.shape[0]
-    print("Nev",Nev)
     p = np.random.poisson(size=(Nev,N))
     return p
-    
+
 # Unfold the reference sample, prepare bootstrap replica of the result to estimate stat. uncertainties.
 rt = rt.reshape(rt.shape[0],1,1)
 out = model.predict(rt)
