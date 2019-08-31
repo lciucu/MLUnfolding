@@ -85,7 +85,7 @@ if overwriteSettings:
     string_stage=my_string_stage
 
 # output
-outputFolderName="./output12"
+outputFolderName="./output13_2"
 if overwriteSettings:
     outputFolderName=my_outputFolderName
 os.system("mkdir -p "+outputFolderName)
@@ -126,11 +126,12 @@ inputFileName="/afs/cern.ch/user/l/lciucu/public/data/MLUnfolding/user.yili.1844
 # as we treat both truth and reco at the same time to the NN and we need a function from reco to the truth
 maxValue=500.0 # in GeV,
 # the bin width for the leading jet pt
-binWidth=10.0 # in GeV
+binWidth=20.0 # in GeV
 # number of bins is calculated from these two
 NBins=int(maxValue/binWidth)
 if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
+nrBins_histo_ratio=[i-0.5 for i in range(NBins+1)]
 
 extensions="pdf,png,eps"
 #extensions="png"
@@ -244,6 +245,7 @@ list_metric=[
 ]
 
 dict_metric_plotRange={
+    # 10 GeV bin
     #"loss":[1.70,3.8],
     #"accuracy":[0.05,0.45]
     #"loss":[1.70,2.0],
@@ -253,6 +255,9 @@ dict_metric_plotRange={
     #"accuracy":[0.30,0.35],
     "loss":[1.75,2.5],
     "accuracy":[0.20,0.35],
+    # 20 GeV bin
+    "loss":[1,3],
+    "accuracy":[0,1.0],
 }
 
 list_optionTrainTest=[
@@ -764,8 +769,8 @@ def overlayGraphsValues(list_tupleArray,outputFileName="overlay",extensions="pdf
 # to color different bins in different colors, like a rainbow gradient https://stackoverflow.com/questions/23061657/plot-histogram-with-colors-taken-from-colormap
 # obtain the max value: # https://stackoverflow.com/questions/15558136/obtain-the-max-y-value-of-a-histogram
 # plotting two histograms in one plt.hist did not work for me easily, but I loop over list of arrays anyway, as I need to give them different labels and colors etc
-
-def overlay_histogram_from_nparray(list_tupleArray,outputFileName="./output_histo_from_nparray",extensions="png,pdf",nrBins=100,histtype="step",info_x=["x-axis"],info_y=["Number of points"],title="Title",text=None,info_legend=["best"],debug=False,verbose=False):
+def overlay_histogram_from_nparray_with_ratio(list_tupleArray,outputFileName="./output_histo_from_nparray",extensions="png,pdf",nrBins=100,histtype="step",info_x=["x-axis"],info_y=["Number of points"],title="Title",text=None,info_legend=["best"],list_color="r,g,b,k,y".split(","),doAddRatioPad=False,debug=False,verbose=False):
+    debug=True
     if debug:
         print("Start draw_histogram_from_nparray()")
         print("outputFileName",outputFileName)
@@ -775,58 +780,76 @@ def overlay_histogram_from_nparray(list_tupleArray,outputFileName="./output_hist
         print("title",title)
     # 
     max_y=np.NINF # negative infinity
-    style="A"
-    if style=="A":
-        fig=pylab.figure()
-        for i,(nparray,legendText) in enumerate(list_tupleArray):
-            ax = fig.add_subplot(111)
-            n,b,patches=ax.hist(nparray,bins=nrBins,alpha=1.0,color=list_color[i],histtype=histtype,label=legendText)
-            if n.max()>max_y:
-                max_y=n.max()
+    fig=pylab.figure()
+    n_reference=0
+    max_n_ratio=np.NINF # negative infinity 
+    if doAddRatioPad:
+        ax=fig.add_subplot(211)
+        ax2=fig.add_subplot(212)
+    else:
+        ax=fig.add_subplot(111)
+    for i,(nparray,legendText) in enumerate(list_tupleArray):
+        if debug:
+            print("i",i,legendText,nparray)
+        n,b,patches=ax.hist(nparray,bins=nrBins,alpha=1.0,color=list_color[i],histtype=histtype,label=legendText)
+        if n.max()>max_y:
+            max_y=n.max()
+        if debug:
+            print_nparray("n","n","n",n)
+            print_nparray("b","b","b",b)
+            print("patches",patches)
+            print("max_y",max_y)
+        if doAddRatioPad:
+            if i==0:
+                n_reference=copy.deepcopy(n)
+            # calculate ratio of number of bins
+            n_ratio=n/n_reference
             if debug:
-                print("n",n)
-                print("b",b)
-                print("patches",patches)
-                print("max_y",max_y)
-    if style=="B":
-        for i,tupleArray in enumerate(list_tupleArray):
-            print("tupleArray",tupleArray)
-            nparray,legendText=tupleArray
-            print("nparray",nparray)
-            print("legendText",legendText)
-            print("i",i)
-            y,x,a=plt.hist(nparray,bins=nrBins,alpha=1,color=list_color[i],histtype=histtype,label=legendText)
-            # note y (vertical) is returned before x (horizontal)
-            print("x",type(x),x)
-            print("y",type(y),y)
-            #print(type(x),x,len(x),x.shape,np.min(x),np.max(x),np.sum(x)
-            #print(type(y),y,len(y),y.shape,np.min(y),np.max(y),np.sum(y)
-            #print(type(a),a
-            if np.max(y)>max_y:
-                max_y=np.max(y)
-            #print_nparray("x",legendText,"x",x)
-            #print_nparray("x",legendText,"y",y)
-            #print_nparray("x",legendText,"a",a)
+                print("before:")
+                print_nparray("n_ratio","n_ratio","n_ratio",n_ratio)
+            # replace nan with zero in place
+            n_ratio=np.nan_to_num(n_ratio,copy=True)
+            if debug:
+                print("after:")
+                print_nparray("n_ratio","n_ratio","n_ratio",n_ratio)
+            # calculate maximum of n_ratio
+            current_max_n_ratio=np.max(n_ratio)
+            if current_max_n_ratio>max_n_ratio:
+                max_n_ratio=current_max_n_ratio
+            if debug:
+                print_nparray("n_reference","n_reference","n_reference",n_reference)
+                print_nparray("n_ratio","n_ratio","n_ratio",n_ratio)
+            # add the ratio as numpy arrays
+            ax2.plot(b[1:],n_ratio,c=list_color[i],label=legendText)
+        # done if doAddRatioPad
+    # done loop over histograms, we have also the max_y and max_n_ratio
     # axes
     x_label=info_x[0]
     y_label=info_y[0]
-    plt.xlabel(x_label)
-    plt.ylabel(y_label)
-    plt.ylim(0,max_y*1.2)
+    # ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    ax.set_ylim(0,max_y*1.3)
     # title
-    plt.title(title)
+    ax.set_title(title)
     # text
     if text is not None:
-        plt.text(0.2,0.9,text,bbox=dict(facecolor='red', alpha=0.5),horizontalalignment="left",fontstyle="oblique",transform=ax.transAxes)
+        ax.text(0.2,0.9,text,bbox=dict(facecolor='red', alpha=0.5),horizontalalignment="left",fontstyle="oblique",transform=ax.transAxes)
     # legend
     # set legend
-    plt.legend(loc=info_legend[0])
+    ax.legend(loc=info_legend[0])
+    if doAddRatioPad:
+        ax2.legend(loc=info_legend[0])
+        ax2.set_ylabel("Ratio to "+list_tupleArray[0][1])
+        ax2.set_xlabel(x_label)
+        ax2.set_ylim(0,max_n_ratio*1.3)
+    else:
+        ax.set_xlabel(x_label)
     # for each extension create a plot
     for extension in extensions.split(","):
         fileNameFull=outputFileName+"."+extension
         print("Saving plot at",fileNameFull)
         plt.savefig(fileNameFull)
-    # close the figure
+        # close the figure
     plt.close()
 # done function
 
@@ -953,7 +976,7 @@ def plot_outputPredictedMinusTrue():
             # done for loop over infoNN
             title="optionTrainTest="+optionTrainTest+" NN output predicted minus true"
             outputFileName=outputFolderName+"/NN_plot1D_"+optionTrainTest+"_outputPredictedMinusTrue_NN_"+name
-            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["difference in NN output predicted minus true","linear"],info_y=["Number of jets","linear"],title=title,text=None,debug=False,verbose=False)
+            overlay_histogram_from_nparray_with_ratio(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["difference in NN output predicted minus true","linear"],info_y=["Number of jets","linear"],title=title,info_legend=["best"],list_color=list_color,doAddRatioPad=True,text=None,debug=False,verbose=False)
         # done for loop over my_list_infoNN
     # done for loop over optionTrainTest
 # done function
@@ -963,7 +986,6 @@ def plot_outputPredictedMinusTrue():
 def plot_input_output():
     if debug or verbose:
         print("Start plot_input_output()")
-    nrBins=np.arange(NBins)-0.5
     # 
     for optionTrainTest in list_optionTrainTest:
         list_list_dataType=[
@@ -992,18 +1014,24 @@ def plot_input_output():
             my_list_infoNN=listInfoToPlot[1]
             # create the tuple of arrays to plot
             list_tupleArray=[]
-            # add our trained NNs
-            for i,infoNN in enumerate(my_list_infoNN):
-                nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
-                list_tupleArray.append((dict_name_nparray["outputPredicted_NN_"+nameNN],nameNN))
-            # done for loop over the trained NNs
-            # add the input and output_True that are to appear last
+            my_list_color=[]
             list_tupleArray.append((dict_name_nparray["outputTrue"],"outputTrue"))
-            list_tupleArray.append((dict_name_nparray["input"],"input"))
+            my_list_color.append("b")
+            if name=="noTrained":
+                list_tupleArray.append((dict_name_nparray["input"],"input"))
+                my_list_color.append("k")
+            else:
+                # add our trained NNs
+                for i,infoNN in enumerate(my_list_infoNN):
+                    nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                    list_tupleArray.append((dict_name_nparray["outputPredicted_NN_"+nameNN],nameNN))
+                    my_list_color.append(list_color[i])
+                # done for loop over the trained NNs
+            # done if
             # make the plot of overlay of histograms
             title="optionTrainTest="+optionTrainTest
             outputFileName=outputFolderName+"/NN_plot1D_"+optionTrainTest+"_jetPtBin_NN_"+name
-            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["nr of bins of jet for "+name],info_y=['Number of jets'],title=title,text=None,info_legend=["best"],debug=False,verbose=False)
+            overlay_histogram_from_nparray_with_ratio(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins_histo_ratio,histtype="step",info_x=["nr of bin of width "+str(binWidth)+" GeV, in which falls the jetPt for "+name],info_y=['Number of jets'],title=title,text=None,info_legend=["best"],list_color=my_list_color,doAddRatioPad=True,debug=False,verbose=False)
         # done loop over the listInfoToPlot
         #
         # now we want to plot 2D histograms of each of input with the various outputs
@@ -1017,7 +1045,7 @@ def plot_input_output():
             # title="optionTrainTest="+optionTrainTest+" "+name_vertical+" vs "+name_horizontal
             title=optionTrainTest+" "+name_vertical+" vs "+name_horizontal
             outputFileName=outputFolderName+"/NN_plot2D_"+optionTrainTest+"_"+name_horizontal+"_"+name_vertical
-            draw_histogram_2d(dict_name_nparray[name_horizontal],dict_name_nparray[name_vertical],outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,info_x=[name_horizontal],info_y=[name_vertical],title=title,plotColorBar=True,debug=debug,verbose=verbose)
+            draw_histogram_2d(dict_name_nparray[name_horizontal],dict_name_nparray[name_vertical],outputFileName=outputFileName,extensions=extensions,nrBins=nrBins_histo_ratio,info_x=[name_horizontal],info_y=[name_vertical],title=title,plotColorBar=True,debug=debug,verbose=verbose)
         # done loop over list_dataType
     # done loop over optionTrainTest
 # done function
