@@ -1,154 +1,79 @@
-#!/Users/luizaadelinaciucu/anaconda2/bin/python
+#!/usr/bin/env python
 
-from __future__ import print_function
+import uproot
 
-# Basic imports for the MLUnfolding example. The code depends on scipy, numpy and keras
-import matplotlib.pyplot as plt
-import scipy.integrate 
 import numpy as np
-import math
 
-#
-import keras
-from keras.models import Sequential
-from keras.layers import Dense,Flatten,Dropout
-from keras import backend as K
-
-###############################################################################
-### configurations  ###
-###############################################################################
-
-debug=True
+debug=False
 verbose=True
+doTest=False
 
-outputFolder="./output"
-extensions="png,pdf".split(",")
-list_treeName=["particleLevel","nominal"]
+inputFileName="/afs/cern.ch/user/l/lciucu/public/data/MLUnfolding/user.yili.18448069._000001.output.sync.root"
+file=uproot.open(inputFileName)
+if debug:
+    print("file",file)
 
-NBins=500
-supersample=1
-NSample=NBins*supersample
-
-batch_size=1000
-epochs=50
-
-
-
-
-
-
-
-
-###############################################################################
-### functions ###
-###############################################################################
-
-def p(name,value):
-    print(name,value,type(value),value.shape,value.dtype)
-# done function
-          
-def gen(dict_treeName_probs,N=20000):
+def readROOTFile(treeName):
     if debug or verbose:
-        print("start gen() with N",N)
-    dict_treeName_asim={}
-    for treeName in list_treeName:
-        if debug or verbose:
-            print("treeName",treeName)
-        # simulated events
-        a=np.random.choice(NSample,N,p=dict_treeName_probs[treeName]) 
-        if debug:
-            p("a",a)
-            print("a.shape",a.shape)
-            print("a/supersample",a/supersample)
-        # output simulated bins
-        asim = np.trunc(a/supersample)
-        if debug:
-            p("asim",asim)
-        # plot histogram of asim
-        plt.hist(asim,bins=np.linspace(0,NBins,NBins))
-        for extension in extensions:
-            plt.savefig(outputFolder+"/ML_asim_"+treeName+"."+extension)
-        plt.close()
-        dict_treeName_asim[treeName]=asim
-    # done for loop
-    return dict_treeName_asim["particleLevel"],dict_treeName_asim["nominal"]
-# done function
-
-# Definition of the model using 3-layer neural network.
-def prepareModel(nvar=1, NBins=NBins, kappa=8):
-    ''' Prepare KERAS-based sequential neural network with for ML unfolding. 
-        Nvar defines number of inputvariables. NBins is number of truth bins. 
-        kappa is an empirically tuned parameter for the intermediate layer'''
-    model = Sequential()
-    model.add(Dense(nvar,activation='linear',input_shape=(nvar,1)))
+        print("Start for treeName=",treeName)
+    # get the tree
+    tree=file[treeName]
+    # get the number of events in the tree
+    nrEvents=tree.numentries
+    if debug or verbose:
+        print("nrEvents",nrEvents)
+    # get the array with the collection per jets
+    # as many entries as number of events
+    # one entry is the numpy array of jets
+    array_jet_pt=tree.array("jet_pt")
+    if debug or verbose:
+        print(treeName,"array_jet_pt",array_jet_pt.shape,type(array_jet_pt))
     if debug:
-        print("model",model)
-    model.add(Flatten())
-    model.add(Dense(kappa*NBins**2,activation='relu'))
-    #model.add(Dropout(0.25))
-    #model.add(Dense(2*NBins,activation='relu'))
-    #model.add(Dropout(0.5))
-    model.add(Dense(NBins,activation='softmax'))
-    model.compile(loss=keras.losses.categorical_crossentropy,
-                  optimizer=keras.optimizers.Adadelta(),
-                  metrics=['accuracy'])
-    return model
-# done function 
-    
-def doItAll():
-    if debug or verbose:
-        print("start do it all for MLUnfolding")
-    dict_treeName_probs={}
-    for treeName in list_treeName:
-        probsFileName=outputFolder+"/nparray_binContent_"+treeName+".npy"
-        probs=np.load(probsFileName)
-        print("probs",probs,type(probs),probs.shape,probs.dtype)
-        dict_treeName_probs[treeName]=probs
-    # done for loop over treeName
-    gt,rt=gen(dict_treeName_probs,N=20000)
-    gf,rf=gen(dict_treeName_probs,N=2000000)
-    # create neural network model
-    model = prepareModel(1)
-    # Prepare inputs for keras
-    # gcat = keras.utils.to_categorical(g,NBins)
-    gtcat = keras.utils.to_categorical(gt,NBins)
-    gfcat = keras.utils.to_categorical(gf)
-
-    print("gt",gt,"NBins",NBins)
-    print("gtcat",gtcat,gtcat.shape)
-    print("gf",gf,"NBins",NBins)
-    print("gfcat",gfcat,gfcat.shape)
-    # print("r",r,r.shape)
-    # r = r.reshape(r.shape[0],1,1)
-    # print("r",r,r.shape)
-    print("rt",rt,rt.shape)
-    rt = rt.reshape(rt.shape[0],1,1)
-    print("rt",rt,rt.shape)
-    print("rf",rf,rf.shape)
-    rf = rf.reshape(rf.shape[0],1,1)
-    print("rf",rf,rf.shape)
-
-    #return
-    # Fit the model
-    h = model.fit(rf,gfcat,batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(rt,gtcat))
-    # save model,if needed
-    model.save(outputFolder+"/model.hdf5")
-# done function 
+        for jet_pt in array_jet_pt:
+            print("jet_pt",jet_pt,jet_pt.shape)
+    # we want to loop over the events and store the leading jet pt values into a list
+    # so that we then can convert the list to a numpy array
+    # we create in fact two lists
+    # half of events go to the training set, so those with i=even number, so i%2==0
+    # have of the events go to the testing set, so those with i=odd number, so i%2==1
+    list_leading_jet_pt_train=[]
+    list_leading_jet_pt_test=[]
+    for i in range(nrEvents):
+        if doTest:
+            # if we are testing we run only on a few events, so skip those with i above 5
+            if i>5:
+                continue
+        jet_pt=array_jet_pt[i]
+        if debug:
+            print("i",i,"jet_pt",jet_pt,jet_pt.shape,type(jet_pt))
+        # the leading jet_pt is the index number 0 of jet_pt
+        leading_jet_pt=jet_pt[0]
+        # convert from MeV to GeV by multiplying by 0.001
+        leading_jet_pt*=0.001
+        if debug:
+            print("leading_jet_pt",type(leading_jet_pt),leading_jet_pt)
+        # add the leading_jet_pt to the one of the two lists, training or testing, depending if the event is even or odd
+        if i%2==0:
+            list_leading_jet_pt_train.append(leading_jet_pt)
+        else:
+            list_leading_jet_pt_test.append(leading_jet_pt)
+    # done loop over events in the tree
+    # the two lists are now filled, each should have half of the number of entries as there are events
+    # we create two numpy arrays from the two lists
+    nparray_leading_jet_pt_train=np.array(list_leading_jet_pt_train)
+    nparray_leading_jet_pt_test=np.array(list_leading_jet_pt_test)
+    if verbose:
+        print(treeName,"nparray_leading_jet_pt_train",nparray_leading_jet_pt_train,type(nparray_leading_jet_pt_train),nparray_leading_jet_pt_train.shape)
+        print(treeName,"nparray_leading_jet_pt_test",nparray_leading_jet_pt_test,type(nparray_leading_jet_pt_test),nparray_leading_jet_pt_test.shape)
+    # all done, we can return the numpy array of the leading jet pt
+    return nparray_leading_jet_pt_train,nparray_leading_jet_pt_test
+# done function
 
 
-###############################################################################
-### running  ###
-###############################################################################
+# run code that reads .root file and creates numpy array of jets for train and test saples for reco and truth trees
+nparray_leading_jet_pt_train_recon,nparray_leading_jet_pt_test_recon=readROOTFile("nominal")
+nparray_leading_jet_pt_train_truth,nparray_leading_jet_pt_test_truth=readROOTFile("particleLevel")
 
-doItAll()
+jet_pt_bin_size=10.0 # in GeV
 
-
-
-###############################################################################
-### done all  ###
-###############################################################################
-
-print("")
-print("")
-print("All finished well for MLUnfolding.py")
 
