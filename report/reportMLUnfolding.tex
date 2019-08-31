@@ -112,21 +112,88 @@ Machine learning for jet energy unfolding in ttbar analysis
 
 \maketitle
 
-
-
 \tableofcontents
 \newpage
 \setcounter{page}{1}
 
 \section{Introduction}
 
-This is my first paragraph.
+\ \\At this moment, LHC (The Large Hadron Collider) situated at CERN is the most powerful particle collider in the world. After Tevatron and LEP (Large Electron Collider) era, a new machine was needed for new discoveries in particle physics. 
+
+\ \\This analysis is based on ATLAS (A Toroidal LHC ApparatuS) measurements.  ATLAS is one of the four LHC's detectors, being a general-purpose particle physics, run by an international collaboration ~\cite{ATLAS}. 
+
+\ \\The Standard Model is a synthesis of three of the four forces of nature described by gauge theories with coupling constant.
+
+\ \\Measuring the top-quark properties is the key to test the validity of the Standard Model.The Top quark is an interesting particle to study for several reasons: is the heaviest particle from the Standard Model (mt=173.3 GeV/c2) implies a high coupling constant to the Higgs which implies a high sensitivity to new physics. Another reason will be that decay very quickly (tau~10 -25 s). And if we find deviations in the top quark properties from the Standard Model predictions (e.g different cross-sections) implies the existence of new physics Beyond the Standard Model which is a very big purpose. Its evidence was discovered in March 1994 at CDF experiment at FermiLab in pp collisions at s=1.8 TeV. Top quarks are produced in pairs by strong interactions by quark-antiquark annihilation 10\%, as gluon gluon fusion 90\%. The LHC has very high luminosity and the top quark are well understood. So because of this we can stay that the LHC is a top quark factory. 
+
+\ \\At leading order the pair production of tt pairs is described by the following Feynman diagrams. We are interested about dileptonic channel. Even it is presented only in 2\% of the cases, it is advantageous because the background is very low comparing to others decay channel. The background comes in most of the cases from Z boson decay plus other jets.
+
+\ \\In a theoretical simulation we calculate the truth and we ash what is observed (reconstructed). In experimental analysis is the other way around we know the observed (reco) and we want to know which was its real value, the truth. These two histograms of the leading jet pT generated is on the left and reconstructed on the right. The histograms are normalised to unit area which means we can compare only their shapes. Although they look similar they are not identical especially at the low pT bins.  
+
+\ \\If we "combine" the two previous histograms in a 2D histogram, we will obtain the jet pT migration matrix. The Matrix Element Method is an extraordinary tool for data analysis in High Energy Physics and could be suitable for top quark analysis. But it has some disadvantages as well, it would be slow, and the costs of implementation would be too high~\cite{bendavid}.
+
+\ \\ In this project one of the inconvenience that we want to solve is the correction of detector smearing using Machine Learning. In my case I implemented this method using a sequential Neural Network. Unfolding is the process of inferring the \emph{true} values from the observed (reconstructed) quatities. 
+
+\subsection{Neural Networks}
+
+In this project one of the problems that we want to solve is the correction of detector smearing using Machine Learning. I have implemented this method using a sequential Neural Network. The unfolding correspond to an inversion of the transfer matrix. In my project unfolding is regarded as a categorization problem, which means that for each reconstructed data event the most probable truth bin. The categorization is a common problem for the modern Machine Learning methods. Posible methods could be boosted decision trees and Artificial Neural Networks. Neural Networks with various arhitectures can be tried for the unfolding problem. Networks with convolutional layers may explore distance relation between variable and truth bins.  N For the Unfolding part of this project I have used Machine Learning (ML) via Neural Networks.
+
+\ \\ Neural Networks are an example of Machine Learning. In this way the computers learn a solution for a problem without being explicitly programmed. The two main classes of ML are supervised and unsupervised. 
+In this project I used supervised ML. ......~\cite{AndrewNg}.
+
+\ \\If we have the function Pi(y), a multidimensional highly non-linear, an efficient way to do this procedure is with an NN. This was inspired by the brain structure, which contains millions of neurone cells forming a network with electrochemical impulses passing between them. An artificial neural network formed by a number of interconnected artificial \emph{neurons}, or "nodes" respects this architecture. 
+
+\ \\A network is formed by several ayers of nodes connected in series. Each node takes a weighted linear combination of the outputs from nodes of the previous layer, applies "activation function", then outputs the result do the next layer~\cite{AndrewNg}.
+
+\ \\Using a "loss" function we can describe the difference between the predicted and real outputs, like the mean squared error between real and predicted. The weights associated with each node is modifies via an algorithm, and from here we can deduce that the loss function decreases and training increases.
+
+\ \\We know from The \emph{Universal Approximation Theorem} that a neural network with one \emph{hidden layer} of nodes between input and output can in principle approximate any N-dimensional function to an arbitrary degree of accuracy, given a sufficiently large (though finite) number of nodes. 
+
+\ \\In practice it is more suitable to use multiple hidden layers connected in series~\cite{AndrewNg}.
+
+\subsection{The method}
+
+My first step was to study a code example using some toy data in a JupyterNotebook~\cite{glazov}. At the beginning I ran the code on a cloud (Swan). 
+
+\ \\The next step was to run it on \texttt{lxplus}. For this it was needed to run after \texttt{ssh}-ing to a \texttt{lxplus} machine a singularity command: \\
+{\small \texttt{singularity exec '/cvmfs/unpacked.cern.ch/registry.hub.docker.com/atlasml/ml-base:latest'bash}} and then to my own laptop.
+
+\ \\To train the neural network it was needed to use the Python library Keras~\cite{keras} and for backend TensorFlow~\cite{tensorflow}. My method of sampling was implemented using numpy~\cite{numpy}.
+
+
+
+
+
+
+\begin{thebibliography}{11}
+
+\bibitem{glazov} Alexander Glazov, \textit{Machine learning as an instrument for dana unfolding}, \textbf{arXiv}: 1712.01814v1, \url{http://inspirehep.net/record/1641082}
+\bibitem{ATLAS} The ATLAS experiment, \url{https://atlas.cern}
+\bibitem{bendavid} Joshua Bendavid, \textit{Efficient Monte Carlo Integration Using Boosted Decision Trees and Generative Deep Neural Networks}, 2017
+\bibitem{AndrewNg} Andrew Ng, \textit{Machine Learning. Coursera online course}, \url{URL https://www.coursera.org/learn/machine learning}
+\bibitem{keras} The keras machine learning library, \url{https://keras.io}
+\bibitem{tensorflow} The TensorFlow machine learning library, \url{https:// www.tensforflow.org}
+\bibitem{numpy} The Numerical Python library, \url{https://www.numpy.org}
+\bibitem{topquark} \textit{Measurement of jet activity produced in top-quark events with an electron, a muon and two b-tagged jets in the final state in pp collision at s=13 TeV with the ATLAS detector}, \textbf{arXiv}: 1610.09978v2, \url{https://arxiv.org/pdf/1610.09978.pdf} 
+\end{thebibliography}
+
 
 \end{document}
 
-%%%%%%%%%%%%%%%
-%%% example code
-%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+\end{thebibliography}
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% example code - do not write below
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Introduction}
 
@@ -218,9 +285,6 @@ Some text here..................................................................
 Some text here..............................................................................
 
 \begin{thebibliography}{11}
-\bibitem{creutz}
-M. Creutz and B. Freedman, \textit{A Statistical Approach to Quantum Mechanics}, Annals of Physics,
-\textbf{132}, 427-462 (1981).
 \bibitem{nagashima}
 Yorikiyo Nagashima, Yoichiro Nambu, \textit{Elementary Particle Physics Volume 1: Quantum Field
 Theory and Particles}, (WILEY-VCH, 2010)
