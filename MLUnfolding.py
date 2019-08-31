@@ -1,18 +1,43 @@
 #!/usr/bin/env python
 
+# import from basic Python to be able to read automatically the name of a file
+import sys
+import os
+
 #########################################################################################################
-#### define the stages
+#### command line arguments
 #########################################################################################################
 
-# exit()
+total = len(sys.argv)
+# number of arguments plus 1                                                    
+if total!=4:
+    print("You need some arguments, will ABORT!")
+    print("Ex: ",sys.argv[0]," stringNNs stringStage outputFolder")
+    print("Ex: ",sys.argv[0]," B3_8_3_1000,B4_8_3_200 1110 output11_7")
+    assert(False)
+# done if     
+
+my_stringNNs=sys.argv[1]
+my_string_stage=sys.argv[2]
+my_outputFolderName=sys.argv[3]
+
+my_list_infoNN=[]
+for stringNN in my_stringNNs.split(","):
+    list_stringNN=stringNN.split("_")
+    list_infoNN=[list_stringNN[0],int(list_stringNN[1]),int(list_stringNN[2]),int(list_stringNN[3])]
+    my_list_infoNN.append(list_infoNN)
+# done for loop
+
+print("my_stringNNs",my_stringNNs)
+print("my_list_infoNN",my_list_infoNN)
+print("my_string_stage",my_string_stage)
+print("my_outputFolderName",my_outputFolderName)
 
 #########################################################################################################
 #### import statements
 #########################################################################################################
 
-# import from basic Python to be able to read automatically the name of a file
-import sys
-import os
+
 
 # to create a deep copy of a list
 import copy
@@ -37,6 +62,8 @@ import pylab
 debug=False
 verbose=True
 
+overwriteSettings=True
+
 # we split the code into stages, so that we can run only the last stage for instance
 # the output of each stage is stored to files, that are read back at the next stage
 # stage 1: read .root file and produce numpy arrays that are input and output to the NN training
@@ -44,16 +71,22 @@ verbose=True
 # stage 2: use the rf, rt, gfcat, gtcat to produce a NN training and store the model weights to a file
 # stage 3: use the NN to do further studies - not yet done
 # stage 4: make plots of the NN training - done
-#string_stage="1111" # all steps
+string_stage="1111" # all steps
 #string_stage="1000" # NN input
 #string_stage="0100" # NN train
 #string_stage="0010" # NN analyze
 #string_stage="0001" # plots
 #string_stage="1101"
+#string_stage="0110"
 #string_stage="0101"
 
+if overwriteSettings:
+    string_stage=my_string_stage
+
 # output
-outputFolderName="./output11_1"
+outputFolderName="./output11_6"
+if overwriteSettings:
+    outputFolderName=my_outputFolderName
 os.system("mkdir -p "+outputFolderName)
 
 list_stage=list(string_stage)
@@ -111,13 +144,22 @@ list_infoNN=[
     #["A1",k,e,b],
     #["B1",k,e,b],
     #["B2",k,e,b],
-    ["B3",k,e,b],
+    #["B3",k,e,b],
     #["B4",k,e,b],
     #["B5",k,e,b],
     #["B10",k,e,b],
     #["C5",k,e,b],
     #["D5",k,e,b],
+    #["B3",8,e,5000],
+    #["B3",8,e,1000],
+    ["B3",8,e,200],
+    #["B3",8,e,60],
+    ["B4",8,e,200],
+    ["B5",8,e,200],
 ]
+
+if overwriteSettings:
+    list_infoNN=my_list_infoNN
 
 #list_infoNN=[
 #    ["A1",k,e,b],
@@ -146,6 +188,8 @@ list_listInfoToPlot=[
     #["B4",[ ["B4",k,e,b] ]],
     #["B5",[ ["B5",k,e,b] ]],
     #["B10",[ ["B10",k,e,b] ]],
+    #["B3_b",[ ["B3",8,e,1000],["B3",8,e,5000],["B3",8,e,200],["B3",8,e,60] ]],
+    ["B3_B4_B5_200",[ ["B3",8,e,200],["B4",8,e,200],["B5",8,e,200] ]],
 ]
 
 list_metric=[
@@ -168,7 +212,7 @@ list_optionTrainTest=[
 ]
 
 list_outputType=[
-    "Label",
+    "True",
     "Predicted",
 ]
 
@@ -188,12 +232,11 @@ def get_from_infoNN(infoNN):
     batchSize=infoNN[3]
     if verbose:
         print("Start do NN part for","layer",layer,"kappa",str(kappa),"nrEpoch",str(nrEpoch),"batchSize",str(batchSize))
-    fileNameStem="layer_"+layer+"_kappa_"+str(kappa)+"_nrEpoch_"+str(nrEpoch)+"_batchSize_"+str(batchSize)
-    fileNameStemShort="l_"+layer+"_k_"+str(kappa)+"_e_"+str(nrEpoch)+"_b_"+str(batchSize)
+    nameNN="l_"+layer+"_k_"+str(kappa)+"_e_"+str(nrEpoch)+"_b_"+str(batchSize)
     if debug:
-        print("fileNameStem",fileNameStem)
+        print("nameNN",nameNN)
     # done if
-    return fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize
+    return nameNN,layer,kappa,nrEpoch,batchSize
 # done function
 
 # a general function to print the values and other properties of a numpy array
@@ -324,10 +367,10 @@ def gen(uproot_file,option,maxValue,binWidth):
 def get_input_and_output_for_NN(inputFileName):
     # if we run this stage, then compute and store the output in these files
     # and if we do not run this stage, we simply load from the files
-    fileName_gfcat=outputFolderName+"/NN_output_train_nparray_gfcat.npy"
-    fileName_gtcat=outputFolderName+"/NN_output_test_nparray_gtcat.npy"
-    fileName_rf=outputFolderName+"/NN_input_train_nparray_rf.npy"
-    fileName_rt=outputFolderName+"/NN_input_test_nparray_rt.npy"
+    fileName_gfcat=outputFolderName+"/NN_train_output_gfcat_nparray.npy"
+    fileName_gtcat=outputFolderName+"/NN_test_output_gtcat_nparray.npy"
+    fileName_rf=outputFolderName+"/NN_train_input_rf_nparray.npy"
+    fileName_rt=outputFolderName+"/NN_test_input_rt_nparray.npy"
     # start the if statement
     if doROOTRead:
         # open the .root file to be used for both type of trees and both types of options
@@ -458,22 +501,22 @@ def prepare_NN_model(NBins,nvar=1,layer="A",kappa=8):
     return model
 # done function
 
-def get_fileNameWeights(fileNameStem):
-    fileNameWeights=outputFolderName+"/NN_model_"+fileNameStem+"_weights.hdf5"
+def get_fileNameWeights(nameNN):
+    fileNameWeights=outputFolderName+"/NN_model_weights_NN_"+nameNN+".hdf5"
     if debug:
         print("fileNameWeights",fileNameWeights)
     # done if
     return fileNameWeights
 # done function
 
-def get_fileNameLossAccuracyNrEpoch(fileNameStem):
+def get_fileNameLossAccuracyNrEpoch(nameNN):
     # loss and accuracy
-    fileNameLossTrain=outputFolderName+"/NN_model_"+fileNameStem+"_train_nparray_loss.npy"
-    fileNameLossTest=outputFolderName+"/NN_model_"+fileNameStem+"_test_nparray_loss.npy"
-    fileNameAccuracyTrain=outputFolderName+"/NN_model_"+fileNameStem+"_train_nparray_accuracy.npy"
-    fileNameAccuracyTest=outputFolderName+"/NN_model_"+fileNameStem+"_test_nparray_accuracy.npy"
+    fileNameLossTrain=outputFolderName+"/NN_train_loss_NN_"+nameNN+"_nparray.npy"
+    fileNameLossTest=outputFolderName+"/NN_test_loss_NN_"+nameNN+"_nparray.npy"
+    fileNameAccuracyTrain=outputFolderName+"/NN_train_accuracy_NN_"+nameNN+"_nparray.npy"
+    fileNameAccuracyTest=outputFolderName+"/NN_test_accuracy_NN_"+nameNN+"_nparray.npy"
     # nrEpoch
-    fileNameNrEpoch=outputFolderName+"/NN_model_"+fileNameStem+"_nparray_nrEpoch.npy"
+    fileNameNrEpoch=outputFolderName+"/NN_nrEpoch_NN_"+nameNN+"_nparray.npy"
     # 
     if debug:
         print("fileNameLossTrain",fileNameLossTrain)
@@ -486,20 +529,20 @@ def get_fileNameLossAccuracyNrEpoch(fileNameStem):
 # done function
 
 # train the NN model
-def train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt):
+def train_NN_model(nameNN,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt):
     # if we want to train, we train and store the weights to a file
     # we also store to files the numpy arrays of the loss and accuracy values for train and test
     # if we do not retrain, then we load these from the saved files to save time
-    fileNameWeights=get_fileNameWeights(fileNameStem)
-    fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
+    fileNameWeights=get_fileNameWeights(nameNN)
+    fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(nameNN)
     # 
     if True:
         if verbose:
-            print("Start train NN for",fileNameStem)
+            print("Start train NN for",nameNN)
         # fit the model
         h=model.fit(rf,gfcat,batch_size=batchSize,epochs=nrEpoch,verbose=1,validation_data=(rt,gtcat),shuffle=False)
         if verbose:
-            print("  End train NN for",fileNameStem)
+            print("  End train NN for",nameNN)
         # the object h will remember the history of the loss and accuracy for each epoch
         # we retrieve these as numpy arrays from h and will store them in files
         # so that we can update the style of plots without having to do all the NN training again
@@ -533,19 +576,19 @@ def train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt):
     # we do not need to return the model, as we passed it by argument
 # done function
 
-def analyze_NN_model(fileNameStem,model,gfcat,gtcat,rf,rt):
+def analyze_NN_model(nameNN,model,gfcat,gtcat,rf,rt):
     if verbose:
-        print("Start train NN for",fileNameStem)
-    fileNameWeights=get_fileNameWeights(fileNameStem)
+        print("Start train NN for",nameNN)
+    fileNameWeights=get_fileNameWeights(nameNN)
     model.load_weights(fileNameWeights)
     # now the model is loaded and it is ready to predict based on inputs
     # create a dictionary of inputs and outputs as a function of train and test
     # to loop over train and test and not write the same code twice
     dict_name_nparray={}
     dict_name_nparray["train_inputCategorical"]=rf
-    dict_name_nparray["train_outputLabelCategorical"]=gfcat
+    dict_name_nparray["train_outputTrueCategorical"]=gfcat
     dict_name_nparray["test_inputCategorical"]=rt
-    dict_name_nparray["test_outputLabelCategorical"]=gtcat
+    dict_name_nparray["test_outputTrueCategorical"]=gtcat
     # add the outputPredicted to the same dictionary
     for optionTrainTest in list_optionTrainTest:
         dict_name_nparray[optionTrainTest+"_outputPredictedCategorical"]=model.predict(dict_name_nparray[optionTrainTest+"_inputCategorical"])
@@ -572,8 +615,9 @@ def analyze_NN_model(fileNameStem,model,gfcat,gtcat,rf,rt):
             print("name",name)
         outputFileName=outputFolderName+"/NN_"+name
         if "Predicted" in name:
-            outputFileName+="_"+fileNameStem
-        outputFileName+=".npy"
+            outputFileName+="_NN_"+nameNN
+        outputFileName+="_nparray.npy"
+        
         np.save(outputFileName,dict_name_nparray[name])
     # done for loop
     # nothing to return
@@ -758,14 +802,14 @@ def get_dict_name_nparray(list_infoNN):
     dict_name_nparray={}
     # dict_name_nparray["test"]=np.array(range(50))
     for infoNN in list_infoNN:
-        fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         # load the numpy arrays of the losses, accuracies and nrEpoch from files
-        fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
-        dict_name_nparray[fileNameStem+"_loss_train"]=np.load(fileNameLossTrain)
-        dict_name_nparray[fileNameStem+"_loss_test"]=np.load(fileNameLossTest)
-        dict_name_nparray[fileNameStem+"_accuracy_train"]=np.load(fileNameAccuracyTrain)
-        dict_name_nparray[fileNameStem+"_accuracy_test"]=np.load(fileNameAccuracyTest)
-        dict_name_nparray[fileNameStem+"_nrEpoch"]=np.load(fileNameNrEpoch)
+        fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(nameNN)
+        dict_name_nparray[nameNN+"_loss_train"]=np.load(fileNameLossTrain)
+        dict_name_nparray[nameNN+"_loss_test"]=np.load(fileNameLossTest)
+        dict_name_nparray[nameNN+"_accuracy_train"]=np.load(fileNameAccuracyTrain)
+        dict_name_nparray[nameNN+"_accuracy_test"]=np.load(fileNameAccuracyTest)
+        dict_name_nparray[nameNN+"_nrEpoch"]=np.load(fileNameNrEpoch)
     # done loop over infoNN
     if debug:
         print("dict_name_nparray")
@@ -781,7 +825,7 @@ def overlay_train_test(dict_name_nparray):
     # for each NN and  for each of "loss" and "accuracy", overlay train vs test
     # loop over the NN configurations
     for infoNN in list_infoNN:
-        fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         # loop over "loss" and "accuracy"
         for metric in list_metric:
             plotRange=dict_metric_plotRange[metric]
@@ -791,13 +835,13 @@ def overlay_train_test(dict_name_nparray):
                 # color=list_color[i] # e.g. r-
                 # optionPlot=color+"-" # e.g. r-
                 optionPlot=list_optionPlot[i] # e.g. r--
-                list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],optionPlot,optionTrainTest))
+                list_tupleArray.append((dict_name_nparray[nameNN+"_nrEpoch"],dict_name_nparray[nameNN+"_"+metric+"_"+optionTrainTest],optionPlot,optionTrainTest))
             # done for loop over optionTrainTest
-            outputFileName=outputFolderName+"/NN_plot_metric_"+metric+"_NN_"+fileNameStemShort
+            outputFileName=outputFolderName+"/NN_plot1D_optionTrainTest_"+metric+"_NN_"+nameNN
             overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
                                 info_x=["Number of epochs",[-1,-1],"linear"],
                                 info_y=["Value of the "+metric+" function",plotRange,"linear"],
-                                info_legend=["best"],title="NN="+fileNameStemShort,debug=False)
+                                info_legend=["best"],title="NN="+nameNN,debug=False)
 
         # done for loop over metric
     # done for loop over list_info
@@ -816,16 +860,17 @@ def overlay_infoNN(dict_name_nparray):
                 # loop over the NN configurations
                 for i,infoNN in enumerate(my_list_infoNN):
                     print("i",i)
-                    fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                    nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
                     optionPlot=list_optionPlot[i] # e.g. r-
-                    list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],
-                                            optionPlot,fileNameStemShort))
+                    list_tupleArray.append((dict_name_nparray[nameNN+"_nrEpoch"],dict_name_nparray[nameNN+"_"+metric+"_"+optionTrainTest],
+                                            optionPlot,nameNN))
                 # done for loop over infoNN
-                outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_"+metric+"_NN_"+name
+                title="optionTrainTest="+optionTrainTest+" metric="+metric
+                outputFileName=outputFolderName+"/NN_plot1D_"+optionTrainTest+"_"+metric+"_NN_"+name
                 overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
                                     info_x=["Number of epochs",[-1,-1],"linear"],
                                     info_y=["Value of the "+metric+" function",plotRange,"linear"],
-                                    info_legend=["best"],title="optionTrainTest="+optionTrainTest+" NN="+name,debug=False)
+                                    info_legend=["best"],title=title,debug=False)
             # do for loop over listInfoToPlot
         # done for loop over metric
     # done for loop over list_info
@@ -837,23 +882,24 @@ def plot_outputPredictedMinusTrue():
         print("Start plot_outputPredictedMinusTrue()")
     nrBins=[-5.5,-4.5,-3.5,-2.5,-1.5,-0.5,0.5,1.5,2.5,3.5,4.5,5.5]
     for optionTrainTest in list_optionTrainTest:
-        nparray_input=np.load(outputFolderName+"/NN_"+optionTrainTest+"_input.npy")
-        nparray_outputLabel=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputLabel.npy")
+        nparray_input=np.load(outputFolderName+"/NN_"+optionTrainTest+"_input_nparray.npy")
+        nparray_outputTrue=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputTrue_nparray.npy")
         print("none","none","nparray_input",nparray_input)
-        print("none","none","nparray_outputLabel",nparray_outputLabel)
+        print("none","none","nparray_outputTrue",nparray_outputTrue)
         for listInfoToPlot in list_listInfoToPlot:
             name=listInfoToPlot[0]
             my_list_infoNN=listInfoToPlot[1]
             # create the tuple of arrays to plot
             list_tupleArray=[]
             for i,infoNN in enumerate(my_list_infoNN):
-                fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
-                nparray_outputPredicted=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputPredicted_"+fileNameStem+".npy")
-                nparray_outputDiff=nparray_outputPredicted-nparray_outputLabel
-                list_tupleArray.append((nparray_outputDiff,fileNameStemShort))
+                nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                nparray_outputPredicted=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputPredicted_NN_"+nameNN+"_nparray.npy")
+                nparray_outputDiff=nparray_outputPredicted-nparray_outputTrue
+                list_tupleArray.append((nparray_outputDiff,nameNN))
             # done for loop over infoNN
-            outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_outputPredictedMinusTrue_NN_"+name
-            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["difference in NN output predicted minus true","linear"],info_y=["Number of jets","linear"],title=optionTrainTest+": NN output predicted minus true",text=None,debug=False,verbose=False)
+            title="optionTrainTest="+optionTrainTest+" NN output predicted minus true"
+            outputFileName=outputFolderName+"/NN_plot1D_"+optionTrainTest+"_outputPredictedMinusTrue_NN_"+name
+            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["difference in NN output predicted minus true","linear"],info_y=["Number of jets","linear"],title=title,text=None,debug=False,verbose=False)
         # done for loop over my_list_infoNN
     # done for loop over optionTrainTest
 # done function
@@ -867,19 +913,19 @@ def plot_input_output():
     # 
     for optionTrainTest in list_optionTrainTest:
         list_list_dataType=[
-            ["input","output_True"],
-            ["output_True","input"],
+            ["input","outputTrue"],
+            ["outputTrue","input"],
             ]
         # we are now only for train or only for test
         dict_name_nparray={}
         # as we want to make the 2D plot as integers between input and output
-        dict_name_nparray["input"]=np.trunc(np.load(outputFolderName+"/NN_"+optionTrainTest+"_input.npy")) # we truncate to get integers also for reco, as it is for truth
-        dict_name_nparray["output_True"]=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputLabel.npy")
+        dict_name_nparray["input"]=np.trunc(np.load(outputFolderName+"/NN_"+optionTrainTest+"_input_nparray.npy")) # we truncate to get integers also for reco, as it is for truth
+        dict_name_nparray["outputTrue"]=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputTrue_nparray.npy")
         # add each of the NNs trained
         for i,infoNN in enumerate(list_infoNN):
-            fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
-            dict_name_nparray["output_Predicted_"+fileNameStemShort]=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputPredicted_"+fileNameStem+".npy")
-            list_list_dataType.append(["output_True","output_Predicted_"+fileNameStemShort])
+            nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+            dict_name_nparray["outputPredicted_NN_"+nameNN]=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputPredicted_NN_"+nameNN+"_nparray.npy")
+            list_list_dataType.append(["outputTrue","outputPredicted_NN_"+nameNN])
         # done loop over NNs trained
         # now the dictionary contains the input and output of all the NNs
         #
@@ -894,27 +940,28 @@ def plot_input_output():
             list_tupleArray=[]
             # add the input and output_True that are to appear first
             list_tupleArray.append((dict_name_nparray["input"],"input"))
-            list_tupleArray.append((dict_name_nparray["output_True"],"output_True"))
+            list_tupleArray.append((dict_name_nparray["outputTrue"],"outputTrue"))
             # add our trained NNs
             for i,infoNN in enumerate(my_list_infoNN):
-                fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
-                list_tupleArray.append((dict_name_nparray["output_Predicted_"+fileNameStemShort],fileNameStemShort))
+                nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                list_tupleArray.append((dict_name_nparray["outputPredicted_NN_"+nameNN],nameNN))
             # done for loop over the trained NNs
             # make the plot of overlay of histograms
-            outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_jetPtBin_NN_"+name
-            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["nr of bins of jet for "+name],info_y=['Number of jets'],title=optionTrainTest,text=None,info_legend=["best"],debug=False,verbose=False)
+            title="optionTrainTest="+optionTrainTest
+            outputFileName=outputFolderName+"/NN_plot1D_"+optionTrainTest+"_jetPtBin_NN_"+name
+            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["nr of bins of jet for "+name],info_y=['Number of jets'],title=title,text=None,info_legend=["best"],debug=False,verbose=False)
         # done loop over the listInfoToPlot
         #
         # now we want to plot 2D histograms of each of input with the various outputs
-        nrBins=np.arange(20)
+        # nrBins=np.arange(20)
         for list_dataType in list_list_dataType:
             name_horizontal=list_dataType[0]
             name_vertical=list_dataType[1]
             if debug:
                 print_nparray(optionTrainTest,"horizontal",name_horizontal,dict_name_nparray[name_horizontal])
                 print_nparray(optionTrainTest,"vertical",name_vertical,dict_name_nparray[name_vertical])
-            title=name_vertical+" vs "+name_horizontal
-            outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_2D_"+name_horizontal+"_"+name_vertical
+            title="optionTrainTest="+optionTrainTest+" "+name_vertical+" vs "+name_horizontal
+            outputFileName=outputFolderName+"/NN_plot2D_"+optionTrainTest+"_"+name_horizontal+"_"+name_vertical
             draw_histogram_2d(dict_name_nparray[name_horizontal],dict_name_nparray[name_vertical],outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,info_x=[name_horizontal],info_y=[name_vertical],title=title,plotColorBar=True,debug=debug,verbose=verbose)
         # done loop over list_dataType
     # done loop over optionTrainTest
@@ -929,17 +976,17 @@ def doItAll():
     gfcat,gtcat,rf,rt=get_input_and_output_for_NN(inputFileName)    
     # loop over different NN that we compare (arhitecture and learning)
     for infoNN in list_infoNN:
-        fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         if doNNTrain or doNNAnalyze:
             # create empty train model architecture (bad initial weights)
             model=prepare_NN_model(NBins,nvar=1,layer=layer,kappa=kappa)
         if doNNTrain:
             # train the NN
-            train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt)
+            train_NN_model(nameNN,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt)
             # now the model contains the trained data (with the good weights)
         if doNNAnalyze:
             # load the weights of the NN and make prediction of the NN
-            analyze_NN_model(fileNameStem,model,gfcat,gtcat,rf,rt)
+            analyze_NN_model(nameNN,model,gfcat,gtcat,rf,rt)
     # done for loop over infoNN
     if doPlot:
         if doPlotMetrics:
