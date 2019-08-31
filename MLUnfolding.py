@@ -8,30 +8,30 @@ import os
 #### command line arguments
 #########################################################################################################
 
-total = len(sys.argv)
+#total = len(sys.argv)
 # number of arguments plus 1                                                    
-if total!=4:
-    print("You need some arguments, will ABORT!")
-    print("Ex: ",sys.argv[0]," stringNNs stringStage outputFolder")
-    print("Ex: ",sys.argv[0]," B3_8_3_1000,B4_8_3_200 1110 output11_7")
-    assert(False)
+#if total!=4:
+#    print("You need some arguments, will ABORT!")
+#    print("Ex: ",sys.argv[0]," stringNNs stringStage outputFolder")
+#    print("Ex: ",sys.argv[0]," B3_8_3_1000,B4_8_3_200 1110 output11_7")
+#    assert(False)
 # done if     
 
-my_stringNNs=sys.argv[1]
-my_string_stage=sys.argv[2]
-my_outputFolderName=sys.argv[3]
+#my_stringNNs=sys.argv[1]
+#my_string_stage=sys.argv[2]
+#my_outputFolderName=sys.argv[3]
 
-my_list_infoNN=[]
-for stringNN in my_stringNNs.split(","):
-    list_stringNN=stringNN.split("_")
-    list_infoNN=[list_stringNN[0],int(list_stringNN[1]),int(list_stringNN[2]),int(list_stringNN[3])]
-    my_list_infoNN.append(list_infoNN)
-# done for loop
+#my_list_infoNN=[]
+#for stringNN in my_stringNNs.split(","):
+#    list_stringNN=stringNN.split("_")
+#    list_infoNN=[list_stringNN[0],int(list_stringNN[1]),int(list_stringNN[2]),int(list_stringNN[3])]
+#    my_list_infoNN.append(list_infoNN)
+# done for loop
 
-print("my_stringNNs",my_stringNNs)
-print("my_list_infoNN",my_list_infoNN)
-print("my_string_stage",my_string_stage)
-print("my_outputFolderName",my_outputFolderName)
+#print("my_stringNNs",my_stringNNs)
+#print("my_list_infoNN",my_list_infoNN)
+#print("my_string_stage",my_string_stage)
+#print("my_outputFolderName",my_outputFolderName)
 
 #########################################################################################################
 #### import statements
@@ -54,6 +54,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import pylab
+from matplotlib.colors import LogNorm
 
 #########################################################################################################
 #### configuration options
@@ -62,7 +63,7 @@ import pylab
 debug=False
 verbose=True
 
-overwriteSettings=True
+overwriteSettings=False
 
 # we split the code into stages, so that we can run only the last stage for instance
 # the output of each stage is stored to files, that are read back at the next stage
@@ -71,11 +72,11 @@ overwriteSettings=True
 # stage 2: use the rf, rt, gfcat, gtcat to produce a NN training and store the model weights to a file
 # stage 3: use the NN to do further studies - not yet done
 # stage 4: make plots of the NN training - done
-string_stage="1111" # all steps
+#string_stage="1111" # all steps
 #string_stage="1000" # NN input
 #string_stage="0100" # NN train
 #string_stage="0010" # NN analyze
-#string_stage="0001" # plots
+string_stage="0001" # plots
 #string_stage="1101"
 #string_stage="0110"
 #string_stage="0101"
@@ -84,7 +85,7 @@ if overwriteSettings:
     string_stage=my_string_stage
 
 # output
-outputFolderName="./output11_6"
+outputFolderName="./output12"
 if overwriteSettings:
     outputFolderName=my_outputFolderName
 os.system("mkdir -p "+outputFolderName)
@@ -131,11 +132,11 @@ NBins=int(maxValue/binWidth)
 if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
 
-# extensions="pdf,png"
-extensions="png"
+extensions="pdf,png,eps"
+#extensions="png"
 
 k=8
-e=3
+e=3000
 b=1000
 
 # for DNN training with Keras
@@ -151,11 +152,43 @@ list_infoNN=[
     #["C5",k,e,b],
     #["D5",k,e,b],
     #["B3",8,e,5000],
+    #["A1",8,e,1000],
     #["B3",8,e,1000],
-    ["B3",8,e,200],
+    #["B3",8,e,200],
     #["B3",8,e,60],
-    ["B4",8,e,200],
-    ["B5",8,e,200],
+    #["B4",8,e,200],
+    #["B5",8,e,200],
+    #["A1",8,350,1000],
+    #["B3",8,350,1000],
+    #["B3",8,350,200],
+    #["A1",8,3000,200],
+    #["B3",8,3000,200],
+    #["B3",4,3000,200],
+    #["B3",16,3000,200],
+    #["B3",8,3000,60],
+    #["B3",8,3000,200],
+    #["B3",8,3000,1000],
+    #["B3",8,3000,5000],
+    #["A1",8,3000,1000],
+    #["B2",8,3000,1000],
+    #["B3",8,3000,1000],
+    #["B4",8,3000,1000],
+    #["B5",8,3000,1000],
+    #["B10",8,3000,1000],
+    #["A1",8,350,200],
+    #["B3",1,350,200],
+    #["B3",2,350,200],
+    #["B3",4,350,200],
+    #["B3",8,350,200],
+    #["B3",16,350,200],
+    #
+    #["B3",4,150,200],
+    #["B3",8,150,200],
+    #
+    #["A1",8,3000,1000],
+    ["A1",8,150,1000],
+    ["B3",4,150,200],
+    
 ]
 
 if overwriteSettings:
@@ -189,7 +222,20 @@ list_listInfoToPlot=[
     #["B5",[ ["B5",k,e,b] ]],
     #["B10",[ ["B10",k,e,b] ]],
     #["B3_b",[ ["B3",8,e,1000],["B3",8,e,5000],["B3",8,e,200],["B3",8,e,60] ]],
-    ["B3_B4_B5_200",[ ["B3",8,e,200],["B4",8,e,200],["B5",8,e,200] ]],
+    #["B3_B4_B5_200",[ ["B3",8,e,200],["B4",8,e,200],["B5",8,e,200] ]],
+    #
+    #["final",[ ["A1",8,e,1000],["B3",8,e,1000],["B3",8,e,200] ]],
+    #["final2",[ ["A1",8,e,1000],["B3",8,500,1000],["B3",8,500,200] ]],
+    #["final3",[ ["A1",8,350,1000],["B3",8,350,1000],["B3",8,350,200] ]],
+    #["final4",[ ["A1",8,3000,200],["B3",8,3000,200],["B3",4,3000,200],["B3",16,3000,200] ]],
+    #["final5",[ ["B3",8,3000,60],["B3",8,3000,200],["B3",8,3000,1000],["B3",8,3000,5000] ]],
+    #["final6", [    ["A1",8,3000,1000],    ["B2",8,3000,1000],    ["B3",8,3000,1000],    ["B4",8,3000,1000],    ["B5",8,3000,1000],   ["B10",8,3000,1000], ]],
+    #["final7", [     ["B2",8,3000,1000],    ["B3",8,3000,1000], ]],
+    #["final8", [ ["A1",8,350,200], ["B3",1,350,200], ["B3",2,350,200],["B3",4,350,200],["B3",8,350,200],["B3",16,350,200], ]],
+    #["final8", [ ["B3",4,350,200],["B3",8,350,200] ]],
+    #["final8", [ ["B3",4,150,200],["B3",8,150,200] ]],
+    #["final9", [ ["A1",8,3000,1000],["B3",4,150,200] ]],
+    ["final", [ ["A1",8,150,1000],["B3",4,150,200] ]],
 ]
 
 list_metric=[
@@ -202,8 +248,11 @@ dict_metric_plotRange={
     #"accuracy":[0.05,0.45]
     #"loss":[1.70,2.0],
     #"accuracy":[0.25,0.35],
-    "loss":[1.75,1.85],
-    "accuracy":[0.30,0.35],
+    #
+    #"loss":[1.75,1.85],
+    #"accuracy":[0.30,0.35],
+    "loss":[1.75,2.5],
+    "accuracy":[0.20,0.35],
 }
 
 list_optionTrainTest=[
@@ -218,8 +267,10 @@ list_outputType=[
 
 # https://stackoverflow.com/questions/22408237/named-colors-in-matplotlib
 # https://i.stack.imgur.com/lFZum.png
-list_color="r,b,g,k,yellow,blueviolet,indianred,aqua,deeppink,slategrey".split(",")
-list_optionPlot="r-,b-,g-,k-,r--,b--,g--,k--".split(",")
+#list_color="r,b,g,k,yellow,blueviolet,indianred,aqua,deeppink,slategrey".split(",")
+list_color="red,darkgreen,blue,black,yellow,blueviolet,indianred,aqua,deeppink,slategrey".split(",")
+#list_optionPlot="r-,g-,b-,k-,r--,b--,g--,k--".split(",")
+list_optionPlot="slategrey,deeppink,b-,k-,r--,b--,g--,k--".split(",")
 
 #########################################################################################################
 #### Functions general
@@ -781,7 +832,7 @@ def overlay_histogram_from_nparray(list_tupleArray,outputFileName="./output_hist
 
 # x=horizontal, y=vertical; nrBins=100, or nrBins=[0,1,2,3,4]
 def draw_histogram_2d(x,y,outputFileName="./output_histo_2D",extensions="png,pdf",nrBins=100,info_x=["x-axis"],info_y=["y-axis"],title="Title",plotColorBar=True,debug=False,verbose=False):
-    plt.hist2d(x,y,bins=nrBins)
+    plt.hist2d(x,y,bins=nrBins,norm=LogNorm())
     if plotColorBar:
         plt.colorbar()
     # axes
@@ -789,6 +840,9 @@ def draw_histogram_2d(x,y,outputFileName="./output_histo_2D",extensions="png,pdf
     y_label=info_y[0]
     plt.xlabel(x_label)
     plt.ylabel(y_label)
+    # max z axis
+    #z_lim_min,z_lim_max=(0.0,1000.0)
+    #plt.zlim(z_lim_min,z_lim_max)
     # title
     plt.title(title)
     # save plots
@@ -861,7 +915,7 @@ def overlay_infoNN(dict_name_nparray):
                 for i,infoNN in enumerate(my_list_infoNN):
                     print("i",i)
                     nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
-                    optionPlot=list_optionPlot[i] # e.g. r-
+                    optionPlot=list_color[i] # e.g. r-
                     list_tupleArray.append((dict_name_nparray[nameNN+"_nrEpoch"],dict_name_nparray[nameNN+"_"+metric+"_"+optionTrainTest],
                                             optionPlot,nameNN))
                 # done for loop over infoNN
@@ -938,14 +992,14 @@ def plot_input_output():
             my_list_infoNN=listInfoToPlot[1]
             # create the tuple of arrays to plot
             list_tupleArray=[]
-            # add the input and output_True that are to appear first
-            list_tupleArray.append((dict_name_nparray["input"],"input"))
-            list_tupleArray.append((dict_name_nparray["outputTrue"],"outputTrue"))
             # add our trained NNs
             for i,infoNN in enumerate(my_list_infoNN):
                 nameNN,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
                 list_tupleArray.append((dict_name_nparray["outputPredicted_NN_"+nameNN],nameNN))
             # done for loop over the trained NNs
+            # add the input and output_True that are to appear last
+            list_tupleArray.append((dict_name_nparray["outputTrue"],"outputTrue"))
+            list_tupleArray.append((dict_name_nparray["input"],"input"))
             # make the plot of overlay of histograms
             title="optionTrainTest="+optionTrainTest
             outputFileName=outputFolderName+"/NN_plot1D_"+optionTrainTest+"_jetPtBin_NN_"+name
@@ -960,7 +1014,8 @@ def plot_input_output():
             if debug:
                 print_nparray(optionTrainTest,"horizontal",name_horizontal,dict_name_nparray[name_horizontal])
                 print_nparray(optionTrainTest,"vertical",name_vertical,dict_name_nparray[name_vertical])
-            title="optionTrainTest="+optionTrainTest+" "+name_vertical+" vs "+name_horizontal
+            # title="optionTrainTest="+optionTrainTest+" "+name_vertical+" vs "+name_horizontal
+            title=optionTrainTest+" "+name_vertical+" vs "+name_horizontal
             outputFileName=outputFolderName+"/NN_plot2D_"+optionTrainTest+"_"+name_horizontal+"_"+name_vertical
             draw_histogram_2d(dict_name_nparray[name_horizontal],dict_name_nparray[name_vertical],outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,info_x=[name_horizontal],info_y=[name_vertical],title=title,plotColorBar=True,debug=debug,verbose=verbose)
         # done loop over list_dataType
