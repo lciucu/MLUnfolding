@@ -13,6 +13,9 @@
 # import from basic Python to be able to read automatically the name of a file
 import sys
 
+# to create a deep copy of a list
+import copy
+
 # import to use numpy arrays
 import numpy as np
 
@@ -20,6 +23,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+import pylab
 
 #########################################################################################################
 #### configuration options
@@ -37,11 +41,11 @@ verbose=True
 # stage 4: make plots of the NN training - done
 #string_stage="1111"
 #string_stage="0000"
-#string_stage="1000"
-#string_stage="0100"
-#string_stage="0010"
-#string_stage="0001"
-string_stage="1101"
+#string_stage="1000" # NN input
+#string_stage="0100" # NN train
+#string_stage="0010" # NN analyze
+string_stage="0001" # plots
+#string_stage="1101"
 #string_stage="0101"
 
 list_stage=list(string_stage)
@@ -49,6 +53,10 @@ doROOTRead=bool(int(list_stage[0]))
 doNNTrain=bool(int(list_stage[1]))
 doNNAnalyze=bool(int(list_stage[2]))
 doPlot=bool(int(list_stage[3]))
+
+doPlotMetrics=True
+doPlotOutput1D=True
+doPlotInputOutput2D=True
 
 if debug:
     print("string_stage",string_stage)
@@ -83,7 +91,7 @@ if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
 
 # output
-outputFolderName="./output8"
+outputFolderName="./output9"
 # extensions="pdf,png"
 extensions="png"
 
@@ -108,6 +116,8 @@ list_listInfoToPlot=[
     #["B1_B2_B3_B4_B5",[ ["B1",8,300,1000],["B2",8,300,1000],["B3",8,300,1000],["B4",8,300,1000],["B5",8,300,1000] ]],
     #["B5_C5_D5",[ ["B5",8,300,1000],["C5",8,300,1000],["D5",8,300,1000] ]],
     ["A1_B5",[ ["A1",8,300,1000],["B5",8,300,1000] ]],
+    ["A1",[ ["A1",8,300,1000] ]],
+    ["B5",[ ["B5",8,300,1000] ]],
 ]
 
 
@@ -126,9 +136,15 @@ list_optionTrainTest=[
     "test",
 ]
 
+list_outputType=[
+    "Label",
+    "Predicted",
+]
+
 # https://stackoverflow.com/questions/22408237/named-colors-in-matplotlib
 # https://i.stack.imgur.com/lFZum.png
-list_color="r-,b-,g-,k-,r--,b--,g--,k--".split(",")
+list_color="r,b,g,k".split(",")
+list_optionPlot="r-,b-,g-,k-,r--,b--,g--,k--".split(",")
 
 #########################################################################################################
 #### Functions general
@@ -142,16 +158,18 @@ def get_from_infoNN(infoNN):
     if verbose:
         print("Start do NN part for","layer",layer,"kappa",str(kappa),"nrEpoch",str(nrEpoch),"batchSize",str(batchSize))
     fileNameStem="layer_"+layer+"_kappa_"+str(kappa)+"_nrEpoch_"+str(nrEpoch)+"_batchSize_"+str(batchSize)
+    fileNameStemShort="l_"+layer+"_k_"+str(kappa)+"_e_"+str(nrEpoch)+"_b_"+str(batchSize)
     if debug:
         print("fileNameStem",fileNameStem)
     # done if
-    return fileNameStem,layer,kappa,nrEpoch,batchSize
+    return fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize
 # done function
 
 # a general function to print the values and other properties of a numpy array
 # use to see the values of the numpy arrays in our code for debugging and understanding the code flow
 def print_nparray(option1,option2,nparray_name,nparray):
     if verbose or debug:
+        print("")
         print("option1",option1,"option2",option2,nparray_name)
         print(nparray)
         print("type",type(nparray),"shape",nparray.shape,"min_value=%.3f"%np.min(nparray),"min_position=%.0f"%np.argmin(nparray),"max_value=%.3f"%np.max(nparray),"max_position=%.0f"%np.argmax(nparray))
@@ -444,7 +462,7 @@ def train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt):
     fileNameWeights=get_fileNameWeights(fileNameStem)
     fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
     # 
-    if doNNTrain:
+    if True:
         if verbose:
             print("Start train NN for",fileNameStem)
         # fit the model
@@ -482,6 +500,52 @@ def train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt):
     #    model.load_weights(fileNameWeights)
     # done if
     # we do not need to return the model, as we passed it by argument
+# done function
+
+def analyze_NN_model(fileNameStem,model,gfcat,gtcat,rf,rt):
+    if verbose:
+        print("Start train NN for",fileNameStem)
+    fileNameWeights=get_fileNameWeights(fileNameStem)
+    model.load_weights(fileNameWeights)
+    # now the model is loaded and it is ready to predict based on inputs
+    # create a dictionary of inputs and outputs as a function of train and test
+    # to loop over train and test and not write the same code twice
+    dict_name_nparray={}
+    dict_name_nparray["train_inputCategorical"]=rf
+    dict_name_nparray["train_outputLabelCategorical"]=gfcat
+    dict_name_nparray["test_inputCategorical"]=rt
+    dict_name_nparray["test_outputLabelCategorical"]=gtcat
+    # add the outputPredicted to the same dictionary
+    for optionTrainTest in list_optionTrainTest:
+        dict_name_nparray[optionTrainTest+"_outputPredictedCategorical"]=model.predict(dict_name_nparray[optionTrainTest+"_inputCategorical"])
+        dict_name_nparray[optionTrainTest+"_input"]=dict_name_nparray[optionTrainTest+"_inputCategorical"].flatten()
+        if debug or verbose:
+            print_nparray(optionTrainTest,"none",optionTrainTest+"_inputCategorical",dict_name_nparray[optionTrainTest+"_inputCategorical"])
+            print_nparray(optionTrainTest,"none",optionTrainTest+"_input",dict_name_nparray[optionTrainTest+"_input"])
+        for outputType in list_outputType:
+            dict_name_nparray[optionTrainTest+"_output"+outputType]=np.argmax(dict_name_nparray[optionTrainTest+"_output"+outputType+"Categorical"],axis=1)
+            if debug or verbose:
+                print_nparray(optionTrainTest,"none","output"+outputType+"Categorical",dict_name_nparray[optionTrainTest+"_output"+outputType+"Categorical"])
+                print_nparray(optionTrainTest,"none","output"+outputType,dict_name_nparray[optionTrainTest+"_output"+outputType])
+            if debug:
+                print_nparray(optionTrainTest,"none","output"+outputType+"Categorical[0]",dict_name_nparray[optionTrainTest+"_output"+outputType+"Categorical"][0])
+                print_nparray(optionTrainTest,"none","output"+outputType+"Categorical[1]",dict_name_nparray[optionTrainTest+"_output"+outputType+"Categorical"][1])
+                print_nparray(optionTrainTest,"none","output"+outputType+"Categorical[2]",dict_name_nparray[optionTrainTest+"_output"+outputType+"Categorical"][2])
+        # done for loop
+    # done forl loop
+    # save some of the nparrays from the dictionary to files as .npy
+    for name in sorted(dict_name_nparray.keys()):
+        if name.endswith("Categorical"):
+            continue
+        if verbose:
+            print("name",name)
+        outputFileName=outputFolderName+"/NN_"+name
+        if "Predicted" in name:
+            outputFileName+="_"+fileNameStem
+        outputFileName+=".npy"
+        np.save(outputFileName,dict_name_nparray[name])
+    # done for loop
+    # nothing to return
 # done function
 
 ########################################################################################################
@@ -566,12 +630,104 @@ def overlayGraphsValues(list_tupleArray,outputFileName="overlay",extensions="pdf
     plt.close()
 # done function
 
+# histtype: bar, barstacked, step, stepfilled
+# nrBins: 100 or list of bins edges
+# option A: https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.axes.Axes.hist.html
+# only option A works if we want to add a text in the plot whose size is relative to the plot and not to the values plotted
+# option B: https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.pyplot.hist.html
+# to color different bins in different colors, like a rainbow gradient https://stackoverflow.com/questions/23061657/plot-histogram-with-colors-taken-from-colormap
+# obtain the max value: # https://stackoverflow.com/questions/15558136/obtain-the-max-y-value-of-a-histogram
+# plotting two histograms in one plt.hist did not work for me easily, but I loop over list of arrays anyway, as I need to give them different labels and colors etc
+
+def overlay_histogram_from_nparray(list_tupleArray,outputFileName="./output_histo_from_nparray",extensions="png,pdf",nrBins=100,histtype="step",info_x=["x-axis"],info_y=["Number of points"],title="Title",text=None,info_legend=["best"],debug=False,verbose=False):
+    if debug:
+        print("Start draw_histogram_from_nparray()")
+        print("outputFileName",outputFileName)
+        print("extensions",extensions)
+        print("info_x",info_x)
+        print("info_y",info_y)
+        print("title",title)
+    # 
+    max_y=np.NINF # negative infinity
+    style="A"
+    if style=="A":
+        fig=pylab.figure()
+        for i,(nparray,legendText) in enumerate(list_tupleArray):
+            ax = fig.add_subplot(111)
+            n,b,patches=ax.hist(nparray,bins=nrBins,alpha=1.0,color=list_color[i],histtype=histtype,label=legendText)
+            if n.max()>max_y:
+                max_y=n.max()
+            if debug:
+                print("n",n)
+                print("b",b)
+                print("patches",patches)
+                print("max_y",max_y)
+    if style=="B":
+        for i,tupleArray in enumerate(list_tupleArray):
+            print("tupleArray",tupleArray)
+            nparray,legendText=tupleArray
+            print("nparray",nparray)
+            print("legendText",legendText)
+            print("i",i)
+            y,x,a=plt.hist(nparray,bins=nrBins,alpha=1,color=list_color[i],histtype=histtype,label=legendText)
+            # note y (vertical) is returned before x (horizontal)
+            print("x",type(x),x)
+            print("y",type(y),y)
+            #print(type(x),x,len(x),x.shape,np.min(x),np.max(x),np.sum(x)
+            #print(type(y),y,len(y),y.shape,np.min(y),np.max(y),np.sum(y)
+            #print(type(a),a
+            if np.max(y)>max_y:
+                max_y=np.max(y)
+            #print_nparray("x",legendText,"x",x)
+            #print_nparray("x",legendText,"y",y)
+            #print_nparray("x",legendText,"a",a)
+    # axes
+    x_label=info_x[0]
+    y_label=info_y[0]
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.ylim(0,max_y*1.2)
+    # title
+    plt.title(title)
+    # text
+    if text is not None:
+        plt.text(0.2,0.9,text,bbox=dict(facecolor='red', alpha=0.5),horizontalalignment="left",fontstyle="oblique",transform=ax.transAxes)
+    # legend
+    # set legend
+    plt.legend(loc=info_legend[0])
+    # for each extension create a plot
+    for extension in extensions.split(","):
+        fileNameFull=outputFileName+"."+extension
+        print("Saving plot at",fileNameFull)
+        plt.savefig(fileNameFull)
+    # close the figure
+    plt.close()
+# done function
+
+# x=horizontal, y=vertical; nrBins=100, or nrBins=[0,1,2,3,4]
+def draw_histogram_2d(x,y,outputFileName="./output_histo_2D",extensions="png,pdf",nrBins=100,info_x=["x-axis"],info_y=["y-axis"],title="Title",plotColorBar=True,debug=False,verbose=False):
+    plt.hist2d(x,y,bins=nrBins)
+    if plotColorBar:
+        plt.colorbar()
+    # axes
+    x_label=info_x[0]
+    y_label=info_y[0]
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    # title
+    plt.title(title)
+    # save plots
+    for extension in extensions.split(","):
+        plt.savefig(outputFileName+"."+extension)
+    # done loop over extension
+    plt.close()
+# done function
 
 def get_dict_name_nparray(list_infoNN):
     dict_name_nparray={}
     # dict_name_nparray["test"]=np.array(range(50))
     for infoNN in list_infoNN:
-        fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         # load the numpy arrays of the losses, accuracies and nrEpoch from files
         fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
         dict_name_nparray[fileNameStem+"_loss_train"]=np.load(fileNameLossTrain)
@@ -594,23 +750,23 @@ def overlay_train_test(dict_name_nparray):
     # for each NN and  for each of "loss" and "accuracy", overlay train vs test
     # loop over the NN configurations
     for infoNN in list_infoNN:
-        fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         # loop over "loss" and "accuracy"
         for metric in list_metric:
             plotRange=dict_metric_plotRange[metric]
             # create the tuple of arrays to plot
             list_tupleArray=[]
             for i,optionTrainTest in enumerate(list_optionTrainTest):
-                color=list_color[i] # e.g. r-
+                # color=list_color[i] # e.g. r-
                 # optionPlot=color+"-" # e.g. r-
-                optionPlot=color # e.g. r--
+                optionPlot=list_optionPlot[i] # e.g. r--
                 list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],optionPlot,optionTrainTest))
             # done for loop over optionTrainTest
-            outputFileName=outputFolderName+"/NN_plot_"+fileNameStem+"_"+metric
+            outputFileName=outputFolderName+"/NN_plot_"+fileNameStemShort+"_"+metric
             overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
                                 info_x=["Number of epochs",[-1,-1],"linear"],
                                 info_y=["Value of the "+metric+" function",plotRange,"linear"],
-                                info_legend=["best"],title="NN="+fileNameStem,debug=False)
+                                info_legend=["best"],title="NN="+fileNameStemShort,debug=False)
 
         # done for loop over metric
     # done for loop over list_info
@@ -628,11 +784,11 @@ def overlay_infoNN(dict_name_nparray):
                 list_tupleArray=[]
                 # loop over the NN configurations
                 for i,infoNN in enumerate(my_list_infoNN):
-                    fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                    fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
                     color=list_color[i] # e.g. r-
                     optionPlot=color # e.g. r-
                     list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],
-                                            optionPlot,fileNameStem))
+                                            optionPlot,fileNameStemShort))
                 # done for loop over infoNN
                 outputFileName=outputFolderName+"/NN_plot_"+metric+"_"+optionTrainTest+"_NN_"+name
                 overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
@@ -645,6 +801,93 @@ def overlay_infoNN(dict_name_nparray):
 # done function
 #
 
+def plot_outputPredictedMinusTrue():
+    if debug or verbose:
+        print("Start plot_outputPredictedMinusTrue()")
+    nrBins=[-5.5,-4.5,-3.5,-2.5,-1.5,-0.5,0.5,1.5,2.5,3.5,4.5,5.5]
+    for optionTrainTest in list_optionTrainTest:
+        nparray_input=np.load(outputFolderName+"/NN_"+optionTrainTest+"_input.npy")
+        nparray_outputLabel=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputLabel.npy")
+        print("none","none","nparray_input",nparray_input)
+        print("none","none","nparray_outputLabel",nparray_outputLabel)
+        for listInfoToPlot in list_listInfoToPlot:
+            name=listInfoToPlot[0]
+            my_list_infoNN=listInfoToPlot[1]
+            # create the tuple of arrays to plot
+            list_tupleArray=[]
+            for i,infoNN in enumerate(my_list_infoNN):
+                fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                nparray_outputPredicted=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputPredicted_"+fileNameStem+".npy")
+                nparray_outputDiff=nparray_outputPredicted-nparray_outputLabel
+                list_tupleArray.append((nparray_outputDiff,fileNameStemShort))
+            # done for loop over infoNN
+            outputFileName=outputFolderName+"/NN_plot_overlay_outputPredictedMinusTrue_"+name+"_"+optionTrainTest
+            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["difference in NN output predicted minus true","linear"],info_y=["Number of jets","linear"],title=optionTrainTest+": NN output predicted minus true",text=None,debug=False,verbose=False)
+        # done for loop over my_list_infoNN
+    # done for loop over optionTrainTest
+# done function
+
+# plot 2D matrix of input vs output (two for outputTrue and outputPredicted)
+# and color code to see that it is almost diagonal
+def plot_input_output():
+    if debug or verbose:
+        print("Start plot_input_output()")
+    nrBins=np.arange(NBins)-0.5
+    # 
+    for optionTrainTest in list_optionTrainTest:
+        list_list_dataType=[
+            ["input","output_True"],
+            ["output_True","input"],
+            ]
+        # we are now only for train or only for test
+        dict_name_nparray={}
+        # as we want to make the 2D plot as integers between input and output
+        dict_name_nparray["input"]=np.trunc(np.load(outputFolderName+"/NN_"+optionTrainTest+"_input.npy")) # we truncate to get integers also for reco, as it is for truth
+        dict_name_nparray["output_True"]=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputLabel.npy")
+        # add each of the NNs trained
+        for i,infoNN in enumerate(list_infoNN):
+            fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+            dict_name_nparray["output_Predicted_"+fileNameStemShort]=np.load(outputFolderName+"/NN_"+optionTrainTest+"_outputPredicted_"+fileNameStem+".npy")
+            list_list_dataType.append(["output_True","output_Predicted_"+fileNameStemShort])
+        # done loop over NNs trained
+        # now the dictionary contains the input and output of all the NNs
+        #
+        # we want to plot overlay in 1D of input, output_True and any combination of output_Predicted that is defined in list_listInfoToPlot
+        # but we want also without no trained, so we create a deep copy of the list adn the we add one empty by hand
+        my_list_listInfoToPlot=copy.deepcopy(list_listInfoToPlot)
+        my_list_listInfoToPlot.append(["noTrained",[]])
+        for listInfoToPlot in my_list_listInfoToPlot:
+            name=listInfoToPlot[0]
+            my_list_infoNN=listInfoToPlot[1]
+            # create the tuple of arrays to plot
+            list_tupleArray=[]
+            # add the input and output_True that are to appear first
+            list_tupleArray.append((dict_name_nparray["input"],"input"))
+            list_tupleArray.append((dict_name_nparray["output_True"],"output_True"))
+            # add our trained NNs
+            for i,infoNN in enumerate(my_list_infoNN):
+                fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                list_tupleArray.append((dict_name_nparray["output_Predicted_"+fileNameStemShort],fileNameStemShort))
+            # done for loop over the trained NNs
+            # make the plot of overlay of histograms
+            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFolderName+"/NN_plot_overlay_jetPt_"+name,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["nr of bins of jet for "+name],info_y=['Number of jets'],title=optionTrainTest,text=None,info_legend=["best"],debug=False,verbose=False)
+        # done loop over the listInfoToPlot
+        #
+        # now we want to plot 2D histograms of each of input with the various outputs
+        nrBins=np.arange(20)
+        for list_dataType in list_list_dataType:
+            name_horizontal=list_dataType[0]
+            name_vertical=list_dataType[1]
+            if debug:
+                print_nparray(optionTrainTest,"horizontal",name_horizontal,dict_name_nparray[name_horizontal])
+                print_nparray(optionTrainTest,"vertical",name_vertical,dict_name_nparray[name_vertical])
+            title=name_vertical+" vs "+name_horizontal
+            outputFileName=outputFolderName+"/NN_plot_2D_"+name_horizontal+"_"+name_vertical
+            draw_histogram_2d(dict_name_nparray[name_horizontal],dict_name_nparray[name_vertical],outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,info_x=[name_horizontal],info_y=[name_vertical],title=title,plotColorBar=True,debug=debug,verbose=verbose)
+        # done loop over list_dataType
+    # done loop over optionTrainTest
+# done function
+            
 ########################################################################################################
 #### Function doAll() putting all together
 #######################################################################################################
@@ -654,18 +897,31 @@ def doItAll():
     gfcat,gtcat,rf,rt=get_input_and_output_for_NN(inputFileName)    
     # loop over different NN that we compare (arhitecture and learning)
     for infoNN in list_infoNN:
-        fileNameStem,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         if doNNTrain or doNNAnalyze:
             # create empty train model architecture (bad initial weights)
             model=prepare_NN_model(NBins,nvar=1,layer=layer,kappa=kappa)
+        if doNNTrain:
             # train the NN
             train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt)
             # now the model contains the trained data (with the good weights)
+        if doNNAnalyze:
+            # load the weights of the NN and make prediction of the NN
+            analyze_NN_model(fileNameStem,model,gfcat,gtcat,rf,rt)
     # done for loop over infoNN
     if doPlot:
-        dict_name_nparray=get_dict_name_nparray(list_infoNN)
-        overlay_train_test(dict_name_nparray)
-        overlay_infoNN(dict_name_nparray)
+        if doPlotMetrics:
+            # plot metrics of NN training (loss, accuracy)
+            dict_name_nparray=get_dict_name_nparray(list_infoNN)
+            overlay_train_test(dict_name_nparray)
+            overlay_infoNN(dict_name_nparray)
+        if doPlotOutput1D:
+            # plot output of the NN training (predicted vs true)
+            plot_outputPredictedMinusTrue()
+        if doPlotInputOutput2D:
+            # plot 2D matrix of input vs output (two for outputTrue and outputPredicted)
+            # and color code to see that it is almost diagonal
+            plot_input_output()
 # done function
 
 #########################################################################################################
