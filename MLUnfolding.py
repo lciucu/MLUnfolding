@@ -37,9 +37,18 @@ maxValue=500.0 # in GeV,
 # the bin width for the leading jet pt
 binWidth=10.0 # in GeV
 
+# output
+outputFolderName="./output4"
+
 # for DNN training with Keras
+doTrainNN=True
 batch_size=1000
-epochs=50
+epochs=5
+kappa=8
+
+modelFileNameSuffix="batchSize_"+str(batch_size)+"_epochs_"+str(epochs)+"_"+str(kappa)+".hdf5"
+modelFileName=outputFolderName+"/model_full_"+modelFileNameSuffix
+weightsFileName=outputFolderName+"/model_weights_"+modelFileNameSuffix
 
 #########################################################################################################
 #### Functions
@@ -170,7 +179,8 @@ def prepareModel(NBins,nvar=1,kappa=8):
         kappa is an empirically tuned parameter for the intermediate layer'''
     if verbose or debug:
         print("Start prepareModel with number of variables",nvar,"NBins",NBins,"kappa",kappa)
-    # constructor of the model
+    # constructor of the model with Sequential() 
+    # Read more about the options and commands available here: https://keras.io/models/sequential/
     model = Sequential()
     # we will use three layers, with the same activation functions and kappa as from the code example
     # add the first layer, which is the input from reco, so take them as they are with a linear activation function
@@ -190,6 +200,15 @@ def prepareModel(NBins,nvar=1,kappa=8):
     # done all, so ready to return
     return model
 # done function
+
+# prepare bootstrap replica to determine statistical uncertainties
+def prepareBootstrap(rt,N=10):
+    ''' Prepare bootstrap weights, for error statistical and correlation estimation '''
+    Nev = rt.shape[0]
+    if verbose:
+        print("Nev",Nev)
+    p = np.random.poisson(size=(Nev,N))
+    return p
 
 # the function that runs everything
 def doItAll():
@@ -220,12 +239,64 @@ def doItAll():
     print_nparray("nominal","train","rf",rf)
     print_nparray("nominal","test","rt",rt)
     # prepare the model of the DNN with Keras
-    model=prepareModel(NBins,nvar=1,kappa=8)
-    # fit the model
-    h = model.fit(rf,gfcat,batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(rt,gtcat))
-    exit()
-    # save model,if needed
-    model.save(outputFolder+"/model.hdf5")
+    model=prepareModel(NBins,nvar=1,kappa=kappa)
+    # let's train the NN only once and then save the weights to a file
+    # if already trained, then we can simply read the weights and continue working from there
+    # that way it is faster
+    if doTrainNN:
+        # fit the model
+        h = model.fit(rf,gfcat,batch_size=batch_size,epochs=epochs,verbose=1,validation_data=(rt,gtcat))
+        # save model to not spend the time every time to retrain, as it takes some time
+        # a simple save
+        model.save(modelFileName)
+        # save also only the weights
+        model.save_weights(weightsFileName)
+    # done if
+    out=model.predict(rt)
+    # read as model2 with the same structure as before, but read the weights
+    model2=prepareModel(NBins,nvar=1,kappa=kappa)
+    model2.load_weights(weightsFileName)
+    out2=model2.predict(rt)
+    #
+    if verbose:
+        print_nparray("nominal","test","rt",rt)
+        print_nparray("particleLevel","test","gt",gt)
+        # by printing we see that these two should be the same, they have shape (21538,50)
+        # while gtcat has terms strictly as zero and 1, out has terms that are very small like 10^-4
+        # so let's loop over all the elements and for each get the list with 50 elements, and then loop one by one and compare them
+        # but accepting that 10^-4 is close enough to zero and seeing if they get the element close to 1 at the same possition or close
+        print_nparray("particleLevel","test","gtcat",gtcat)
+        print_nparray("particleLevel","test","out",out)
+        assert(gtcat.shape[0]==out.shape[0])
+        assert(gtcat.shape[1]==out.shape[1])
+        for i in range(gtcat.shape[0]):
+            if i>5:
+                continue
+            gtcat_current=gtcat[i]
+            out_current=out[i]
+            out2_current=out2[i]
+            print_nparray("particleLevel","test","gtcat[i]",gtcat[i])
+            print_nparray("particleLevel","test","out[i]",out[i])
+            print_nparray("particleLevel","test","out2[i]",out2[i])
+            for j in range(gtcat_current.shape[0]):
+                # if True:
+                if gtcat_current[j]>0.1:
+                    print(i,j,"gtcat[i][j]",gtcat_current[j])
+            # done for loop over j
+            for j in range(out_current.shape[0]):
+                # if True:
+                if out_current[j]>0.1:
+                    print(i,j,"out[i][j]",out_current[j])
+                # done if
+            # done for loop over j
+            for j in range(out2_current.shape[0]):
+                # if True:
+                if out2_current[j]>0.1:
+                    print(i,j,"out2[i][j]",out2_current[j])
+                # done if
+            # done for loop over j
+        # done for loop over i
+        
     # all done
 # done function
 
