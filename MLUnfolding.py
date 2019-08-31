@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 #### configuration options
 #########################################################################################################
 
-debug=False
+debug=True
 verbose=True
 
 # we split the code into stages, so that we can run only the last stage for instance
@@ -39,8 +39,8 @@ verbose=True
 #string_stage="1000"
 #string_stage="0100"
 #string_stage="0010"
-#string_stage="0001"
-string_stage="0101"
+string_stage="0001"
+#string_stage="1101"
 
 list_stage=list(string_stage)
 doROOTRead=bool(int(list_stage[0]))
@@ -64,7 +64,7 @@ if doROOTRead:
 if doROOTRead or doNNTrain or doNNAnalyze:
     import keras
 
-doROOTReadTest=False
+doROOTReadTest=True
 
 
 
@@ -83,12 +83,13 @@ if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
 
 # output
-outputFolderName="./output6"
+outputFolderName="./output7"
+extensions="pdf,png"
 
 # for DNN training with Keras
 doTrainNN=True
 # the order is kappa (from architecture), epochs, batchSize, (from learning steps)
-list_list_option=[
+list_infoNN=[
     #
     #[8,200,1000],
     #[4,200,1000],
@@ -109,24 +110,52 @@ list_list_option=[
 ]
 
 # for test
-if False:
-    list_list_option=[
-        [8,3,1000],
-        #[8,50,1000],
-        #[8,1000,1000],
+if True:
+    list_infoNN=[
+        [1,300,1000],
+        #[2,300,1000],
+        [4,300,1000],
+        [8,300,1000],
+        [1,200,1000],
+        #[2,200,1000],
+        [4,200,1000],
+        [8,200,1000],
     ]
 # done if
+
+list_metric=[
+    "loss",
+    "accuracy",
+]
+
+dict_metric_plotRange={
+    "loss":[1.70,4.0],
+    "accuracy":[0.0,0.4]
+}
+
+list_optionTrainTest=[
+    "train",
+    "test",
+]
+
+# https://stackoverflow.com/questions/22408237/named-colors-in-matplotlib
+list_color="r,b,g,k,c,m".split(",")
 
 #########################################################################################################
 #### Functions general
 #######################################################################################################
 
-def get_fileNameStem(kappa,nrEpoch,batchSize):
+def get_from_infoNN(infoNN):
+    kappa=infoNN[0]
+    nrEpoch=infoNN[1]
+    batchSize=infoNN[2]
+    if verbose:
+        print("Start do NN part for","kappa",str(kappa),"nrEpoch",str(nrEpoch),"batchSize",str(batchSize))
     fileNameStem="kappa_"+str(kappa)+"_nrEpoch_"+str(nrEpoch)+"_batchSize_"+str(batchSize)
     if debug:
         print("fileNameStem",fileNameStem)
     # done if
-    return fileNameStem
+    return fileNameStem,kappa,nrEpoch,batchSize
 # done function
 
 # a general function to print the values and other properties of a numpy array
@@ -329,7 +358,7 @@ def prepare_NN_model(NBins,nvar=1,kappa=8):
     # Flatten(): https://stackoverflow.com/questions/44176982/how-flatten-layer-works-in-keras?rq=1
     model.add(keras.layers.Flatten())
     # add the second layer with a relu activation function
-    model.add(keras.layers.Dense(kappa*NBins**2,activation='relu'))
+    model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
     # add the thir layer, or the output, with a softmax activation function
     # softmax function: https://medium.com/data-science-bootcamp/understand-the-softmax-function-in-minutes-f3a59641e86d
     model.add(keras.layers.Dense(NBins,activation='softmax'))
@@ -494,44 +523,80 @@ def overlayGraphsValues(list_tupleArray,outputFileName="overlay",extensions="pdf
     plt.close()
 # done function
 
-# plot
-def plot_loss_accuracy_versus_nrEpoch(fileNameStem):
-    # load the numpy arrays of the losses, accuracies and nrEpoch from files
-    fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
-    nparray_loss_train=np.load(fileNameLossTrain)
-    nparray_loss_test=np.load(fileNameLossTest)
-    nparray_accuracy_train=np.load(fileNameAccuracyTrain)
-    nparray_accuracy_test=np.load(fileNameAccuracyTest)
-    nparray_nrEpoch=np.load(fileNameNrEpoch)
-    # 
-    if verbose:
-        print_nparray("loss","train","nparray_loss_train",nparray_loss_train)
-        print_nparray("loss","test","nparray_loss_test",nparray_loss_test)
-        print_nparray("accuracy","train","nparray_accuracy_train",nparray_accuracy_train)
-        print_nparray("accuracy","test","nparray_accuracy_test",nparray_accuracy_test)
-        print_nparray("nrEpoch","nrEpoch","nparray_nrEpoch",nparray_nrEpoch)
-    #
-    # do plot for loss
-    list_tupleArray=[]
-    list_tupleArray.append((nparray_nrEpoch,nparray_loss_train,"r-","train"))
-    list_tupleArray.append((nparray_nrEpoch,nparray_loss_test,"b-","test"))
-    outputFileName=outputFolderName+"/NN_plot_"+fileNameStem+"_loss"
-    overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions="pdf,png",
-                        info_x=["Number of epochs",[-1,-1],"linear"],
-                        info_y=["Value of the loss function",[-1,-1],"linear"],
-                        info_legend=["best"],title="Loss vs nrEpoch for NN "+fileNameStem,debug=False)
-    #
-    # do plot for accuracy
-    list_tupleArray=[]
-    list_tupleArray.append((nparray_nrEpoch,nparray_accuracy_train,"r-","train"))
-    list_tupleArray.append((nparray_nrEpoch,nparray_accuracy_test,"b-","test"))
-    outputFileName=outputFolderName+"/NN_plot_"+fileNameStem+"_accuracy"
-    overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions="pdf,png",
-                        info_x=["Number of epochs",[-1,-1],"linear"],
-                        info_y=["Value of the accuracy function",[-1,-1],"linear"],
-                        info_legend=["best"],title="Accuracy vs nrEpoch for NN "+fileNameStem,debug=False)
+
+
+def get_dict_name_nparray(list_infoNN):
+    dict_name_nparray={}
+    # dict_name_nparray["test"]=np.array(range(50))
+    for infoNN in list_infoNN:
+        fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        # load the numpy arrays of the losses, accuracies and nrEpoch from files
+        fileNameLossTrain,fileNameLossTest,fileNameAccuracyTrain,fileNameAccuracyTest,fileNameNrEpoch=get_fileNameLossAccuracyNrEpoch(fileNameStem)
+        dict_name_nparray[fileNameStem+"_loss_train"]=np.load(fileNameLossTrain)
+        dict_name_nparray[fileNameStem+"_loss_test"]=np.load(fileNameLossTest)
+        dict_name_nparray[fileNameStem+"_accuracy_train"]=np.load(fileNameAccuracyTrain)
+        dict_name_nparray[fileNameStem+"_accuracy_test"]=np.load(fileNameAccuracyTest)
+        dict_name_nparray[fileNameStem+"_nrEpoch"]=np.load(fileNameNrEpoch)
+    # done loop over infoNN
+    if debug:
+        print("dict_name_nparray")
+        for name in sorted(dict_name_nparray.keys()):
+            nparray=dict_name_nparray[name]
+            print_nparray(name,name,name,nparray)
+    # done all, ready to return
+    return dict_name_nparray
 # done function
 
+# plot
+def overlay_train_test(dict_name_nparray):
+    # for each NN and  for each of "loss" and "accuracy", overlay train vs test
+    # loop over the NN configurations
+    for infoNN in list_infoNN:
+        fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+        # loop over "loss" and "accuracy"
+        for metric in list_metric:
+            plotRange=dict_metric_plotRange[metric]
+            # create the tuple of arrays to plot
+            list_tupleArray=[]
+            for i,optionTrainTest in enumerate(list_optionTrainTest):
+                color=list_color[i] # e.g. r
+                optionPlot=color+"-" # e.g. r-
+                list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],optionPlot,optionTrainTest))
+            # done for loop over optionTrainTest
+            outputFileName=outputFolderName+"/NN_plot_"+fileNameStem+"_"+metric
+            overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
+                                info_x=["Number of epochs",[-1,-1],"linear"],
+                                info_y=["Value of the "+metric+" function",plotRange,"linear"],
+                                info_legend=["best"],title="NN="+fileNameStem,debug=False)
+
+        # done for loop over metric
+    # done for loop over list_info
+# done function
+
+
+def overlay_infoNN(dict_name_nparray):
+    for metric in list_metric:
+        plotRange=dict_metric_plotRange[metric]
+        for optionTrainTest in list_optionTrainTest:
+            # create the tuple of arrays to plot
+            list_tupleArray=[]
+            # loop over the NN configurations
+            for i,infoNN in enumerate(list_infoNN):
+                fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
+                color=list_color[i] # e.g. r
+                optionPlot=color+"-" # e.g. r-
+                list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],optionPlot,fileNameStem))
+            # done for loop over infoNN
+            outputFileName=outputFolderName+"/NN_plot_"+metric+"_"+optionTrainTest
+            overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
+                                info_x=["Number of epochs",[-1,-1],"linear"],
+                                info_y=["Value of the "+metric+" function",plotRange,"linear"],
+                                info_legend=["best"],title="optionTrainTest="+optionTrainTest,debug=False)
+
+        # done for loop over metric
+    # done for loop over list_info
+# done function
+#
 
 ########################################################################################################
 #### Function doAll() putting all together
@@ -544,13 +609,8 @@ def doItAll():
     # different architectures coming from different kappa
     # different learning steps coming from different batchSize and number of nrEpoch
     # by doing a for loop over different options
-    for list_option in list_list_option:
-        kappa=list_option[0]
-        nrEpoch=list_option[1]
-        batchSize=list_option[2]
-        if verbose:
-            print("Start do NN part for","kappa",str(kappa),"nrEpoch",str(nrEpoch),"batchSize",str(batchSize))
-        fileNameStem=get_fileNameStem(kappa,nrEpoch,batchSize)
+    for infoNN in list_infoNN:
+        fileNameStem,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
         if doNNTrain or doNNAnalyze:
             # create the untrained deep neural network (DNN) model
             # architecture coming from the layers that appear with .add()
@@ -560,115 +620,12 @@ def doItAll():
             # we take the previous model as input and the function will change it to have the weights after training
             train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt)
             # now the model contains the trained data
-        if doPlot:
-            plot_loss_accuracy_versus_nrEpoch(fileNameStem)
         continue
-    # done for loop over list_option
-# done function
-
-def bla():
-    if True:
-        # modelFileName,weightsFileName,figFileName,fig2FileName
-        fileNameStem=get_fileNameStem(outputFolderName,batch_size,epochs,kappa)
-        fileNameModel=outputFolderName+"/model_full_"+fileNameStem+".hdf5"
-        weightsFileName=outputFolderName+"/model_weights_"+fileNameStem+".hdf5"
-        # prepare the model of the DNN with Keras
-
-        # let's train the NN only once and then save the weights to a file
-        # if already trained, then we can simply read the weights and continue working from there
-        # that way it is faster
-        if doTrainNN:
-
-            print("start plot")
-            # Turn interactive plotting off
-            plt.ioff()
-            #
-            fig=plt.figure()
-            plt.plot(xc, train_loss,"r","train_loss")
-            plt.plot(xc, val_loss,"b","val_loss")
-            plt.savefig(figFileName)
-            plt.close(fig)
-            #
-            fig=plt.figure()
-            plt.plot(xc, train_acc,"r","train_acc")
-            plt.plot(xc, val_acc,"b","val_acc")
-            plt.savefig(fig2FileName)
-            plt.close(fig)
-            print("end plot")
-            # save model to not spend the time every time to retrain, as it takes some time
-            # a simple save
-            model.save(modelFileName)
-            # save also only the weights
-            model.save_weights(weightsFileName)
-        # done if
-        out=model.predict(rt)
-        # read as model2 with the same structure as before, but read the weights
-        model2=prepareModel(NBins,nvar=1,kappa=kappa)
-        model2.load_weights(weightsFileName)
-        out2=model2.predict(rt)
-        #
-        if verbose:
-            print_nparray("nominal","test","rt",rt)
-            print_nparray("particleLevel","test","gt",gt)
-            # by printing we see that these two should be the same, they have shape (21538,50)
-            # while gtcat has terms strictly as zero and 1, out has terms that are very small like 10^-4
-            # so let's loop over all the elements and for each get the list with 50 elements, and then loop one by one and compare them
-            # but accepting that 10^-4 is close enough to zero and seeing if they get the element close to 1 at the same possition or close
-            print_nparray("particleLevel","test","gtcat",gtcat)
-            print_nparray("particleLevel","test","out",out)
-            assert(gtcat.shape[0]==out.shape[0])
-            assert(gtcat.shape[1]==out.shape[1])
-            for i in range(gtcat.shape[0]):
-                if i>5:
-                    continue
-                gtcat_current=gtcat[i]
-                out_current=out[i]
-                out2_current=out2[i]
-                print_nparray("particleLevel","test","gtcat[i]",gtcat[i])
-                print_nparray("particleLevel","test","out[i]",out[i])
-                print_nparray("particleLevel","test","out2[i]",out2[i])
-                indices_gtcat=np.where(gtcat_current==gtcat_current.max())
-                index=np.argmax(gtcat_current)
-                print("gtcat indices",indices_gtcat,"index",index)
-                gtcat_max=0.0
-                for j in range(gtcat_current.shape[0]):
-                    # if True:
-                    if gtcat_current[j]>0.1:
-                        print(i,j,"gtcat[i][j]",gtcat_current[j])
-                    if gtcat_current[j]>gtcat_max:
-                        gtcat_max=gtcat_current[j]
-                # done for loop over j
-                print("gtcat_max",gtcat_max)
-                indices_out=np.where(out_current==out_current.max())
-                index=np.argmax(out_current)
-                print("out indices",indices_out,"index",index)
-                out_max=0.0
-                for j in range(out_current.shape[0]):
-                    # if True:
-                    if out_current[j]>0.1:
-                        print(i,j,"out[i][j]",out_current[j])
-                    if out_current[j]>out_max:
-                        out_max=out_current[j]
-                    # done if
-                # done for loop over j
-                print("out_max",out_max)
-                #
-                indices_out2=np.where(out2_current==out2_current.max())
-                index=np.argmax(out2_current)
-                print("out2 indices",indices_out2,"index",index)
-                out2_max=0.0
-                for j in range(out2_current.shape[0]):
-                    # if True:
-                    if out2_current[j]>0.1:
-                        print(i,j,"out2[i][j]",out2_current[j])
-                    if out2_current[j]>out2_max:
-                        out2_max=out2_current[j]
-                    # done if
-                # done for loop over j
-                print("out2_max",out2_max)
-            # done for loop over i
-        # done loop over list_option
-    # all done
+    # done for loop over infoNN
+    if doPlot:
+        dict_name_nparray=get_dict_name_nparray(list_infoNN)
+        overlay_train_test(dict_name_nparray)
+        overlay_infoNN(dict_name_nparray)
 # done function
 
 #########################################################################################################
