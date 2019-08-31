@@ -12,12 +12,17 @@
 
 # import from basic Python to be able to read automatically the name of a file
 import sys
+import os
 
 # to create a deep copy of a list
 import copy
 
 # import to use numpy arrays
 import numpy as np
+# to obtain reproducible results, meaning each new NN training to obtain the same result, set the seed of the random number now
+# np.random.seed(2019)
+# np.random.seed(20190825)
+np.random.seed(98383822)
 
 # plots
 import matplotlib
@@ -39,14 +44,17 @@ verbose=True
 # stage 2: use the rf, rt, gfcat, gtcat to produce a NN training and store the model weights to a file
 # stage 3: use the NN to do further studies - not yet done
 # stage 4: make plots of the NN training - done
-#string_stage="1111"
-#string_stage="0000"
+#string_stage="1111" # all steps
 #string_stage="1000" # NN input
 #string_stage="0100" # NN train
 #string_stage="0010" # NN analyze
-string_stage="0001" # plots
+#string_stage="0001" # plots
 #string_stage="1101"
 #string_stage="0101"
+
+# output
+outputFolderName="./output11_1"
+os.system("mkdir -p "+outputFolderName)
 
 list_stage=list(string_stage)
 doROOTRead=bool(int(list_stage[0]))
@@ -90,36 +98,55 @@ NBins=int(maxValue/binWidth)
 if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
 
-# output
-outputFolderName="./output9"
 # extensions="pdf,png"
 extensions="png"
 
+k=8
+e=3
+b=1000
+
 # for DNN training with Keras
 # the order is layer and kappa (from architecture), epochs, batchSize (from learning steps)
-if True:
-    list_infoNN=[
-        ["A1",8,300,1000],
-        #["B1",8,300,1000],
-        #["B2",8,300,1000],
-        #["B3",8,300,1000],
-        #["B4",8,300,1000],
-        ["B5",8,300,1000],
-        #["B10",8,300,1000],
-        #["C5",8,300,1000],
-        #["D5",8,300,1000],
+list_infoNN=[
+    #["A1",k,e,b],
+    #["B1",k,e,b],
+    #["B2",k,e,b],
+    ["B3",k,e,b],
+    #["B4",k,e,b],
+    #["B5",k,e,b],
+    #["B10",k,e,b],
+    #["C5",k,e,b],
+    #["D5",k,e,b],
 ]
+
+#list_infoNN=[
+#    ["A1",k,e,b],
+#    ["B5",k,e,b],
+#]
 
 list_listInfoToPlot=[
-    #["A1_B1_B2_B3_B4_B5_B10",[ ["A1",8,300,1000],["B1",8,300,1000],["B2",8,300,1000],["B3",8,300,1000],["B4",8,300,1000],["B5",8,300,1000],["B10",8,300,1000] ]],
-    #["B1_B2_B3_B4_B5_B10",[ ["B1",8,300,1000],["B2",8,300,1000],["B3",8,300,1000],["B4",8,300,1000],["B5",8,300,1000],["B10",8,300,1000] ]],
-    #["B1_B2_B3_B4_B5",[ ["B1",8,300,1000],["B2",8,300,1000],["B3",8,300,1000],["B4",8,300,1000],["B5",8,300,1000] ]],
-    #["B5_C5_D5",[ ["B5",8,300,1000],["C5",8,300,1000],["D5",8,300,1000] ]],
-    ["A1_B5",[ ["A1",8,300,1000],["B5",8,300,1000] ]],
-    ["A1",[ ["A1",8,300,1000] ]],
-    ["B5",[ ["B5",8,300,1000] ]],
+    #["A1_B1_B2_B3_B4_B5_B10",[ ["A1",k,e,b],["B1",k,e,b],["B2",k,e,b],["B3",k,e,b],["B4",k,e,b],["B5",k,e,b],["B10",k,e,b] ]],
+    #["B1_B2_B3_B4_B5_B10",[ ["B1",k,e,b],["B2",k,e,b],["B3",k,e,b],["B4",k,e,b],["B5",k,e,b],["B10",k,e,b] ]],
+    #["B1_B2_B3_B4_B5",[ ["B1",k,e,b],["B2",k,e,b],["B3",k,e,b],["B4",k,e,b],["B5",k,e,b] ]],
+    #["B2_B3_B4_B5",[ ["B2",k,e,b],["B3",k,e,b],["B4",k,e,b],["B5",k,e,b] ]],
+    #["B3_B4_B5",[ ["B3",k,e,b],["B4",k,e,b],["B5",k,e,b] ]],
+    #["B3_B4_B5_B10",[ ["B3",k,e,b],["B4",k,e,b],["B5",k,e,b],["B10",k,e,b] ]],
+    #["B5_C5_D5",[ ["B5",k,e,b],["C5",k,e,b],["D5",k,e,b] ]],
+    #["A1_B2",[ ["A1",k,e,b],["B2",k,e,b] ]],
+    #["A1_B3",[ ["A1",k,e,b],["B3",k,e,b] ]],
+    #["A1_B4",[ ["A1",k,e,b],["B4",k,e,b] ]],
+    #["A1_B5",[ ["A1",k,e,b],["B5",k,e,b] ]],
+    #["A1_B10",[ ["A1",k,e,b],["B10",k,e,b] ]],
+    #["B3_B4",[ ["B3",k,e,b],["B4",k,e,b] ]],
+    #["B3_B4",[ ["B3",k,e,b],["B4",k,e,b] ]],
+    #["B3_B5",[ ["B3",k,e,b],["B5",k,e,b] ]],
+    #["A1",[ ["A1",k,e,b] ]],
+    #["B2",[ ["B2",k,e,b] ]],
+    #["B3",[ ["B3",k,e,b] ]],
+    #["B4",[ ["B4",k,e,b] ]],
+    #["B5",[ ["B5",k,e,b] ]],
+    #["B10",[ ["B10",k,e,b] ]],
 ]
-
 
 list_metric=[
     "loss",
@@ -127,8 +154,12 @@ list_metric=[
 ]
 
 dict_metric_plotRange={
-    "loss":[1.70,3.8],
-    "accuracy":[0.05,0.45]
+    #"loss":[1.70,3.8],
+    #"accuracy":[0.05,0.45]
+    #"loss":[1.70,2.0],
+    #"accuracy":[0.25,0.35],
+    "loss":[1.75,1.85],
+    "accuracy":[0.30,0.35],
 }
 
 list_optionTrainTest=[
@@ -143,7 +174,7 @@ list_outputType=[
 
 # https://stackoverflow.com/questions/22408237/named-colors-in-matplotlib
 # https://i.stack.imgur.com/lFZum.png
-list_color="r,b,g,k".split(",")
+list_color="r,b,g,k,yellow,blueviolet,indianred,aqua,deeppink,slategrey".split(",")
 list_optionPlot="r-,b-,g-,k-,r--,b--,g--,k--".split(",")
 
 #########################################################################################################
@@ -466,7 +497,7 @@ def train_NN_model(fileNameStem,nrEpoch,batchSize,model,gfcat,gtcat,rf,rt):
         if verbose:
             print("Start train NN for",fileNameStem)
         # fit the model
-        h=model.fit(rf,gfcat,batch_size=batchSize,epochs=nrEpoch,verbose=1,validation_data=(rt,gtcat))
+        h=model.fit(rf,gfcat,batch_size=batchSize,epochs=nrEpoch,verbose=1,validation_data=(rt,gtcat),shuffle=False)
         if verbose:
             print("  End train NN for",fileNameStem)
         # the object h will remember the history of the loss and accuracy for each epoch
@@ -762,7 +793,7 @@ def overlay_train_test(dict_name_nparray):
                 optionPlot=list_optionPlot[i] # e.g. r--
                 list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],optionPlot,optionTrainTest))
             # done for loop over optionTrainTest
-            outputFileName=outputFolderName+"/NN_plot_"+fileNameStemShort+"_"+metric
+            outputFileName=outputFolderName+"/NN_plot_metric_"+metric+"_NN_"+fileNameStemShort
             overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
                                 info_x=["Number of epochs",[-1,-1],"linear"],
                                 info_y=["Value of the "+metric+" function",plotRange,"linear"],
@@ -784,13 +815,13 @@ def overlay_infoNN(dict_name_nparray):
                 list_tupleArray=[]
                 # loop over the NN configurations
                 for i,infoNN in enumerate(my_list_infoNN):
+                    print("i",i)
                     fileNameStem,fileNameStemShort,layer,kappa,nrEpoch,batchSize=get_from_infoNN(infoNN)
-                    color=list_color[i] # e.g. r-
-                    optionPlot=color # e.g. r-
+                    optionPlot=list_optionPlot[i] # e.g. r-
                     list_tupleArray.append((dict_name_nparray[fileNameStem+"_nrEpoch"],dict_name_nparray[fileNameStem+"_"+metric+"_"+optionTrainTest],
                                             optionPlot,fileNameStemShort))
                 # done for loop over infoNN
-                outputFileName=outputFolderName+"/NN_plot_"+metric+"_"+optionTrainTest+"_NN_"+name
+                outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_"+metric+"_NN_"+name
                 overlayGraphsValues(list_tupleArray,outputFileName=outputFileName,extensions=extensions,
                                     info_x=["Number of epochs",[-1,-1],"linear"],
                                     info_y=["Value of the "+metric+" function",plotRange,"linear"],
@@ -821,7 +852,7 @@ def plot_outputPredictedMinusTrue():
                 nparray_outputDiff=nparray_outputPredicted-nparray_outputLabel
                 list_tupleArray.append((nparray_outputDiff,fileNameStemShort))
             # done for loop over infoNN
-            outputFileName=outputFolderName+"/NN_plot_overlay_outputPredictedMinusTrue_"+name+"_"+optionTrainTest
+            outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_outputPredictedMinusTrue_NN_"+name
             overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["difference in NN output predicted minus true","linear"],info_y=["Number of jets","linear"],title=optionTrainTest+": NN output predicted minus true",text=None,debug=False,verbose=False)
         # done for loop over my_list_infoNN
     # done for loop over optionTrainTest
@@ -870,7 +901,8 @@ def plot_input_output():
                 list_tupleArray.append((dict_name_nparray["output_Predicted_"+fileNameStemShort],fileNameStemShort))
             # done for loop over the trained NNs
             # make the plot of overlay of histograms
-            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFolderName+"/NN_plot_overlay_jetPt_"+name,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["nr of bins of jet for "+name],info_y=['Number of jets'],title=optionTrainTest,text=None,info_legend=["best"],debug=False,verbose=False)
+            outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_jetPtBin_NN_"+name
+            overlay_histogram_from_nparray(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,histtype="step",info_x=["nr of bins of jet for "+name],info_y=['Number of jets'],title=optionTrainTest,text=None,info_legend=["best"],debug=False,verbose=False)
         # done loop over the listInfoToPlot
         #
         # now we want to plot 2D histograms of each of input with the various outputs
@@ -882,7 +914,7 @@ def plot_input_output():
                 print_nparray(optionTrainTest,"horizontal",name_horizontal,dict_name_nparray[name_horizontal])
                 print_nparray(optionTrainTest,"vertical",name_vertical,dict_name_nparray[name_vertical])
             title=name_vertical+" vs "+name_horizontal
-            outputFileName=outputFolderName+"/NN_plot_2D_"+name_horizontal+"_"+name_vertical
+            outputFileName=outputFolderName+"/NN_plot_"+optionTrainTest+"_2D_"+name_horizontal+"_"+name_vertical
             draw_histogram_2d(dict_name_nparray[name_horizontal],dict_name_nparray[name_vertical],outputFileName=outputFileName,extensions=extensions,nrBins=nrBins,info_x=[name_horizontal],info_y=[name_vertical],title=title,plotColorBar=True,debug=debug,verbose=verbose)
         # done loop over list_dataType
     # done loop over optionTrainTest
