@@ -8,6 +8,11 @@ debug=False
 verbose=True
 doTest=False
 
+#########################################################################################################
+#### read the .root file with uproot to have numpy arrays of leading jet pt for train and test samples
+#### for each of the reco (treeName="nominal") and truth (treeName="particleLevel")
+#######################################################################################################
+
 inputFileName="/afs/cern.ch/user/l/lciucu/public/data/MLUnfolding/user.yili.18448069._000001.output.sync.root"
 file=uproot.open(inputFileName)
 if debug:
@@ -74,6 +79,41 @@ def readROOTFile(treeName):
 nparray_leading_jet_pt_train_recon,nparray_leading_jet_pt_test_recon=readROOTFile("nominal")
 nparray_leading_jet_pt_train_truth,nparray_leading_jet_pt_test_truth=readROOTFile("particleLevel")
 
+# from these we have to build the inputs to the DNN in the right format
+# following example on toy data from here: https://github.com/aglazov/MLUnfold/blob/master/Unfold.ipynb
+# this initial code with my printouts at  https://gitlab.cern.ch/lciucu/MLUnfolding/blob/master/initialMLUnfolding.py
+# should the input to the NN be the numpy array of the jets pt, so nparray_leading_jet_pt_train_recon ?
+# should the output to the NN be a numpy array of type integer with the bin value for each of the truth jet?
+
+#################################################################
+#### for truth jets find in which bins they are as
+#### NN takes as input  the numpy array of reco jet pt
+#### NN takes as output the numpy array of the bin value of the truth jet pt
+#################################################################
+
 jet_pt_bin_size=10.0 # in GeV
+# only for the truth jets we find can not hope to predict the exact truth jet value, but rather in what truth jet pt bin it falls into
+# so we divide the truth pt by 10 GeV, by the jet_pt_bin_size, and we obtain still a float value
+# we truncte the float value to find the integer value smaller than it, to correspond to the index of the jet pt bin the jet falls into
+# that is what we will aim as output to the NN
+# so we create a new variable that stores the bin values as floats
+nparray_leading_jet_pt_bin_as_float_train_truth=nparray_leading_jet_pt_train_truth/jet_pt_bin_size
+if debug or verbose:
+    print("nparray_leading_jet_pt_bin_as_float_train_truth",nparray_leading_jet_pt_bin_as_float_train_truth,nparray_leading_jet_pt_bin_as_float_train_truth.dtype,nparray_leading_jet_pt_bin_as_float_train_truth.shape)
+# now we truncate the values in this array to get the bin values as integers
+nparray_leading_jet_pt_bin_train_truth=np.trunc(nparray_leading_jet_pt_bin_as_float_train_truth)
+if debug or verbose:
+    print("nparray_leading_jet_pt_bin_train_truth",nparray_leading_jet_pt_bin_train_truth,nparray_leading_jet_pt_bin_train_truth.dtype,nparray_leading_jet_pt_bin_train_truth.shape)
+# what we did so far was for the train sample, we do the same for the testing sample
+#replace "train" with "test"
+nparray_leading_jet_pt_bin_as_float_test_truth=nparray_leading_jet_pt_test_truth/jet_pt_bin_size
+if debug or verbose:
+    print("nparray_leading_jet_pt_bin_as_float_test_truth",nparray_leading_jet_pt_bin_as_float_test_truth,nparray_leading_jet_pt_bin_as_float_test_truth.dtype,nparray_leading_jet_pt_bin_as_float_test_truth.shape)
+# now we truncate the values in this array to get the bin values as integers
+nparray_leading_jet_pt_bin_test_truth=np.trunc(nparray_leading_jet_pt_bin_as_float_test_truth)
+if debug or verbose:
+    print("nparray_leading_jet_pt_bin_test_truth",nparray_leading_jet_pt_bin_test_truth,nparray_leading_jet_pt_bin_test_truth.dtype,nparray_leading_jet_pt_bin_test_truth.shape)
 
-
+#################################################################
+#### 
+#################################################################
