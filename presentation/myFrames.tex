@@ -20,9 +20,10 @@
 \begin{enumerate}
 \item[o] Theoretical simulation: generated (truth) are known $\rightarrow$ observed (reco).
 \item[o] Experimental analysis: observed (reco) are known $\rightarrow$ truth (nature)
+\item[o] Plot taken from the \href{http://www.desy.de/~liyichen/Unfolding.pdf}{report of Yichen Li}. 
 \end{enumerate}
 \centering
-\includegraphics[height=0.5\textheight]{./plots/jet_multiplicity.png}
+\includegraphics[height=0.48\textheight]{./plots/jetPt_truth_reco.png}
 \begin{enumerate}
 \item[o] The shapes of the distributions of the truth and reco observables for the training of the unfolding are very similar, but not identical (especially in the first bins). 
 \end{enumerate}
@@ -34,9 +35,10 @@
 \begin{enumerate}
 \item[o] The migration matrix between truth and reco is used in the traditional unfolding.
 \item[o] Unfolding = inferring the generated (truth) from the observed (reconstructed).
+\item[o] Plot taken from the \href{http://www.desy.de/~liyichen/Unfolding.pdf}{report of Yichen Li}. 
 \end{enumerate}
 \centering
-\includegraphics[height=0.5\textheight]{./plots/jet_multiplicity_migration_matrix.png}
+\includegraphics[height=0.48\textheight]{./plots/jetPt_migration_matrix.png}
 \begin{enumerate}
 \item[o] The more diagonalizable matrix, the easier unfolding will be.
 \item[o] Events are migrating from one truth bin to other bins for reco, and vice-versa.
@@ -63,8 +65,6 @@
 \includegraphics[height=0.70\textheight]{./plots/Unfolding_Traditional_ML.png}
 \end{frame}
 \clearpage
-
-
 
 \begin{frame}{Physics problem: index of truth jet pt = f (reco jet pt) = ?}
 \centering
@@ -97,6 +97,128 @@
 \end{frame}
 \clearpage
 
+\begin{frame}{Summary of the physics and NN choices}
+\begin{table}[h!]
+\begin{enumerate}
+\item[o] One file with 43076 events (and leading jets). Half (21538) in training, half in testing. 
+\item[o] jet pt: range=0-500 GeV, bin width=20 GeV, number of bins = 500/20 = 25.
+\end{enumerate}
+\ \\
+\begin{center}
+  \label{tab:table1}
+  \resizebox{\textwidth}{!}{
+    \begin{tabular}{|l|l|l|} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      \hline
+      \textbf{Choice} & \textbf{Old NN (toy data example)} & \textbf{New NN (my best choice)}\\
+      \hline
+      number of nodes per input layer & 1 & 1 \\
+      number of nodes per output layer & ${\rm Nbins}=25$ & ${\rm Nbins}=25$ \\
+      Number of hidden layers & 1 & 3 \\
+      ${\rm k}$ & 8 & 4 \\
+      Number of nodes per layer & ${\rm k}\cdot {\rm Nbins}^2=5000$ & ${\rm k}\cdot {\rm Nbins}=100$ \\
+      activation function input & linear & linear \\
+      activation function hidden & ReLU & ReLU \\
+      activation function output & softmax & softmax \\
+      batch size & 1000 & 200 \\
+      number of epochs & 150 & 150 \\
+      \hline
+    \end{tabular}
+  }
+\end{center}
+\end{table}
+\end{frame}
+\clearpage
+
+\begin{frame}{Two figures of merit to optimise the NN hyper-parameters}
+\begin{enumerate}
+\item[o] The accuracy: the larger, the better (left: old NN; right: new NN).
+\end{enumerate}
+\centering
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_optionTrainTest_accuracy_NN_l_A1_k_8_e_150_b_1000.pdf}
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_optionTrainTest_accuracy_NN_l_B3_k_4_e_150_b_200.pdf}\\
+\begin{enumerate}
+\item[o] The loss (error) value: the smaller, the better (left: old NN; right: new NN).
+\end{enumerate}
+\centering
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_optionTrainTest_loss_NN_l_A1_k_8_e_150_b_1000.pdf}
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_optionTrainTest_loss_NN_l_B3_k_4_e_150_b_200.pdf}\\
+\begin{enumerate}
+\item[o] Overlaid \textcolor{cyan}{train} and \textcolor{magenta}{test} are very similar $\rightarrow$ we did not overtrain the NNs. 
+\end{enumerate}
+\end{frame}
+\clearpage
+
+\begin{frame}{Overlaying the two NN architectures: \textcolor{red}{old} and \textcolor{OliveGreen}{new}. }
+\begin{enumerate}
+\item[o] The accuracy: the larger, the better (left: train; right: test).
+\end{enumerate}
+\centering
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_train_accuracy_NN_final.pdf}
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_test_accuracy_NN_final.pdf}\\
+\begin{enumerate}
+\item[o] The loss (error) value: the smaller, the better (left: train; right: test).
+\end{enumerate}
+\centering
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_train_loss_NN_final.pdf}
+\includegraphics[height=0.28\textheight]{../output_20GeV/NN_plot1D_test_loss_NN_final.pdf}\\
+\begin{enumerate}
+\item[o] The \textcolor{OliveGreen}{new} NN architecture outperforms the \textcolor{red}{old} one.
+\end{enumerate}
+\end{frame}
+\clearpage
+
+\begin{frame}{The jet pt distribution as the index of the jet pt bin.}
+\begin{enumerate}
+\item[o] True output (generated, truth) vs input (reconstructed). Used in traditional unfolding.
+\end{enumerate}
+\centering
+\includegraphics[height=0.27\textheight]{../output_20GeV/NN_plot1D_train_jetPtBin_NN_noTrained.pdf}
+\includegraphics[height=0.27\textheight]{../output_20GeV/NN_plot1D_test_jetPtBin_NN_noTrained.pdf}
+\begin{enumerate}
+\item[o] The true output vs the predicted unfolded output by each NN architecture.
+\item[o] The \textcolor{OliveGreen}{new} NN architecture is closer to the \textcolor{blue}{true output} than the \textcolor{red}{old} one.
+\end{enumerate}
+\centering
+\includegraphics[height=0.27\textheight]{../output_20GeV/NN_plot1D_train_jetPtBin_NN_final.pdf}
+\includegraphics[height=0.27\textheight]{../output_20GeV/NN_plot1D_test_jetPtBin_NN_final.pdf}
+\end{frame}
+\clearpage
+
+\begin{frame}{The predicted NN output minus the true output.}
+\begin{enumerate}
+\item[o] Both outputs are integers, representing bin indices, $\rightarrow$ difference = also integer.
+\item[o] The greater the count at zero difference, the better.
+\item[o] Top: train, bottom: test. Left to right, bin widths of 10, 20, 50, 100 GeV.
+\item[o] The smaller the binWidth, the better is the \textcolor{OliveGreen}{new} NN architecture relative to the \textcolor{red}{old} one.
+\end{enumerate}
+\centering
+\includegraphics[height=0.25\textheight]{../output_10GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}
+\includegraphics[height=0.25\textheight]{../output_50GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}
+\includegraphics[height=0.25\textheight]{../output_100GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}\\
+\includegraphics[height=0.25\textheight]{../output_10GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}
+\includegraphics[height=0.25\textheight]{../output_50GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}
+\includegraphics[height=0.25\textheight]{../output_100GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}
+\end{frame}
+\clearpage
+
+\begin{frame}{The 2D histogram migration matrix of the index of the jet pt}
+\begin{enumerate}
+\item[o] The closer to a diagonal matrix, the better.
+\item[o] Top: train, Bottom: test.
+\item[o] Left to right: input, \textcolor{red}{old} NN output, \textcolor{OliveGreen}{new} NN output vs true output. 
+\end{enumerate}
+\centering
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot2D_train_outputTrue_input.pdf}
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot2D_train_outputTrue_outputPredicted_NN_l_A1_k_8_e_150_b_1000.pdf}
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot2D_train_outputTrue_outputPredicted_NN_l_B3_k_4_e_150_b_200.pdf}\\
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot2D_test_outputTrue_input.pdf}
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot2D_test_outputTrue_outputPredicted_NN_l_A1_k_8_e_150_b_1000.pdf}
+\includegraphics[height=0.25\textheight]{../output_20GeV/NN_plot2D_test_outputTrue_outputPredicted_NN_l_B3_k_4_e_150_b_200.pdf}\\
+\end{frame}
+\clearpage
+
 \begin{frame}{Summary and Next Steps}
 \begin{enumerate}
 \item[o] Studied Unfolding of the jet pt distributions in ttbar e-mu analysis.
@@ -116,7 +238,21 @@
 \item[o] One NN training is just the first (zeroth) step in the NN unfolding method.
 \end{enumerate}
 \item[o] Use more data (more events and leading jets).
-\item[o] Add other input variables (e.g. jet eta).
+\item[o] Add other input variables (e.g. jet $\eta$).
 \end{enumerate}
+\end{frame}
+\clearpage
+
+\begin{frame}{Backup slides}
+\end{frame}
+\clearpage
+
+\begin{frame}{Traditional unfolding results}
+\begin{enumerate}
+\item[o] Plot taken from Fig. 5 of \href{http://www.desy.de/~liyichen/Unfolding.pdf}{study by Yichen Li}.
+\item[o] Traditional unfolding: iterative bayesian unfolding with 4 iterations.
+\end{enumerate}
+\centering
+\includegraphics[height=0.65\textheight]{./plots/TraditionalUnfolding.png}
 \end{frame}
 \clearpage
