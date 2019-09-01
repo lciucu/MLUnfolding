@@ -1,0 +1,146 @@
+% This document holds the main content of the talk. It is included in
+% the two global documumetns `Presentation.tex` and `Handout.tex` that
+% are used to create the actual presentation as well as a two on one
+% collated handout of the slides.
+%
+% All real content has to go to _this_ file!
+%
+% Last change: <Thu, 2018/05/24 12:59:11 arwagner l00slwagner.desy.de>
+%
+\mode<handout>{%
+    \usepackage{pgf}
+    \usepackage{pgfpages}
+    \pgfpagesuselayout{2 on 1}[a4paper,border shrink=5mm]
+}
+\mode<presentation>{%
+    \usetheme{DESY}
+}
+\input{macros}
+\input{metadata}
+
+%---------------------------------------------------------------------
+
+\begin{document}
+
+\maketitle
+
+% Add a licencse statement to all pages. Adopt this if any other
+% licences is used!
+
+%-% CC-BY-NC-SA 4
+%-% \setbeamertemplate{slide counter}[showall][]
+%-% \setbeamertemplate{footer element1}{%
+%-%     \href{http://creativecommons.org/licenses/by-nc-sa/4.0/}{\includegraphics[height=3ex]{img/CCBYNCSA}}
+%-% }
+
+% CC-BY 4, current suggetion for scientific content
+\setbeamertemplate{slide counter}[showall][]
+\setbeamertemplate{footer element1}{%
+    \href{http://creativecommons.org/licenses/by/4.0/}{\includegraphics[height=3ex]{img/CCBY}}
+}
+
+%----------------------------------------------------------------------
+% Add manual table of contents
+% Two column example
+%-% \begin{frame}
+%-% \frametitle{Overview}
+%-%   \begin{columns}
+%-%       \begin{column}{0.4\textwidth}
+%-%           \hspace*{-0.97cm}\includegraphics[height=\textheight]{img/menzel}
+%-%       \end{column}
+%-%       \begin{column}{0.5\textwidth}
+%-%           \begin{itemize}[<+->]
+%-%               \item {Section}
+%-%               \item {Section}
+%-%           \end{itemize}
+%-%       \end{column}
+%-%   \end{columns}
+%-% \end{frame}
+
+\begin{frame}
+\frametitle{Overview}
+  \begin{itemize}[<+->]
+      \item {Section}
+      \item {Section}
+  \end{itemize}
+\end{frame}
+
+%----------------------------------------------------------------------
+% Missuse parts as chapters according to DESY PR
+\part[Part slide]{Part slide}
+\makepart%
+
+%----------------------------------------------------------------------
+\section{\ldots}
+
+% Add a sample slide with some math, some columns etc.
+\begin{frame}[t,label=...]
+\frametitle{Lorem ipsum}
+\ldots dolor sit amet, consectetur adipiscing elit. Sed facilisis
+dui vel tempor hendrerit. Fusce id sapien sit amet ligula tempor
+porttitor tempus quis mi.
+
+\[
+    E_{t,ij} = \sum_{k,l} \sum_{\lambda_i, \lambda_i'}
+        \rho_{\lambda_1,\lambda_1'}(e^-_1)
+        \rho_{\lambda_2,\lambda_2'}(e^-_2)
+        [T_{ij}^{\lambda_1\phantom{'} \lambda_2}(\neutralino_k)]
+        \cdot
+        [T_{ij}^{\lambda_1' \lambda_2'}(\neutralino_k)]^*
+\]
+
+% left aligned columns. Note that columns with smaller width are
+% centred automatically
+\begin{columns}
+    \begin{column}[t]{0.48\textwidth}
+    Duis autem vel eum iriure dolor in hendrerit in vulputate velit
+    esse molestie consequat, vel illum dolore eu feugiat nulla
+    facilisis at vero eros et accumsan\ldots
+    \end{column}
+    \begin{column}[t]{0.48\textwidth}
+    Nam liber tempor cum soluta nobis eleifend option congue nihil
+    imperdiet \ldots
+    \end{column}
+\end{columns}
+\end{frame}
+
+
+%----------------------------------------------------------------------
+% Thank you page is assembled from metadata.tex
+\begin{frame}
+\frametitle{Thank you!}
+\vfill{}
+\vspace*{3.5cm}
+
+% check %-% comments for inclusion of a QR code. This is not official
+% DESY CD.
+
+\fontsize{8}{9}\selectfont
+\begin{columns}
+	\hspace*{-0.8em}
+	\hspace*{-1em}  % comment if QR code is inserted
+	%-% \begin{column}{0.75\textwidth}
+	\begin{column}{\textwidth}
+		\begin{tabular}{lll}
+		\textbf{Contact}&\hspace*{0.5cm} & \\
+						&\hspace*{0.5cm} & \\
+		\hspace*{-0.4mm}\DESYWord{}Deutsches&\hspace*{0.5cm} & \AUTHOR \\
+		Elektronen-Synchrotron &\hspace*{0.5cm} & \ORCiD{\ORCID}\\
+							&\hspace*{0.5cm} & \GROUP  \\
+							&\hspace*{0.5cm} & \MailTo{\EMAIL}\\
+		www.desy.de			&\hspace*{0.5cm} & \PHONE \\
+							&\hspace*{0.5cm} & \DOIlink{\DOI}\\
+		\end{tabular}
+	\end{column}
+	%-% \begin{column}{0.24\textwidth}
+	%-% \includegraphics[width=0.8\textwidth]{img/aw-vcf-QRCode}\\
+	%-% 	{\tiny\textit{Typeset by lua\LaTeX}}
+	%-% \end{column}
+\end{columns}
+
+
+\end{frame}
+
+\end{document}
+% Enable spell checker for vim
+% setlocal spell spelllang=de

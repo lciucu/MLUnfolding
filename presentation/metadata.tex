@@ -1,0 +1,64 @@
+%------------------- Begin of edit -----------------------------------
+%
+% Adopt the follwing values according to your needs.
+%
+% Note: improving metadata also improves visibility. Time spent here
+% might pay of later. Search engines love keywords, abstracts and
+% sensible titles.
+%
+%     Make sure to submit your talk to the publications database
+%         to get a DOI, to make it citable and OpenAccess!
+%
+\newcommand{\TITLE}{Main title}               % Title of talk
+\newcommand{\SUBTITLE}{Subtitle}              % Subtitle
+\newcommand{\AUTHOR}{Alexander Wagner}        % your name
+\newcommand{\EMAIL}{alexander.wagner@desy.de} % your email
+\newcommand{\ORCID}{0000--0001--9846--5516}   % your ORCiD
+\newcommand{\PHONE}{+49--40--8998--1758}      % your phone number
+\newcommand{\GROUP}{Central Library}          % your group
+\newcommand{\URL}{http://library.desy.de}     % your groups page
+\newcommand{\DOI}{10.3204/PUBDB-20YY-nnnn}    % submit and release in pubdb to get a DOI
+\newcommand{\INSTITUTE}{Conference institute} % not used in CD 2018
+\newcommand{\CITY}{City}                      % City of talk
+\newcommand{\DATE}{01.01.1900}                % Date of Talk
+
+% To improve visibility - add metadata to the PDF
+% - Add sensible keywords describing the topic
+% - Add the abstract (one line, no breaks it is just for indexing)
+% - Adopt the licence of your work
+
+\hypersetup{%
+	pdfkeywords        = {keyword} {keyword} {keyword},
+	pdfsubject         = {Abstract},
+	pdfcopyright       = {CC-BY},
+	pdflicenseurl      = {http://creativecommons.org/licenses/by/4.0/},
+	%% pdfcopyright       = {CC-BY-NC-SA},
+	%% pdflicenseurl      = {http://creativecommons.org/licenses/by-nc-sa/4.0/},
+	pdftitle           = {\TITLE}
+	pdfcreator         = {\AUTHOR},
+	pdfcaptionwriter   = {\AUTHOR},
+	pdfcontactaddress  = {Notkestraße 85},
+	pdfcontactcity     = {Hamburg},
+	pdfcontactpostcode = {22607},
+	pdfcontactcountry  = {Germany},
+	pdfcontactemail    = {\EMAIL},
+	pdfcontacturl      = {\URL},
+	pdflang            = {en},
+	bookmarksopen      = true,
+	bookmarksopenlevel = 3,
+	hypertexnames      = false,
+	linktocpage        = true,
+	plainpages         = false,
+	breaklinks
+}
+
+%------------------- End of edit -------------------------------------
+
+% Derive internal values from above data
+
+\author{\AUTHOR}
+\title{\TITLE}
+\subtitle{\SUBTITLE}
+\institute{}  % not used by DESY CD 2018
+\date{\CITY, \DATE}
+

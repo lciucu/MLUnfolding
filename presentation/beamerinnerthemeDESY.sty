@@ -1,0 +1,79 @@
+% Latex-Beamer Template DESY
+% version 1.0
+% based upon beamer theme for Juelich by i.kabadshow@fz-juelich.de
+
+\mode<presentation>
+
+
+\setlength\leftmargin{0cm}% 2ex+0.75ex (1/2)
+\setlength\rightmargin{0cm}% 2ex+0.75ex (1/2)
+
+\setlength\leftmargini{2.75ex}
+\setlength\leftmarginii{2.75ex}  % 2ex+0.75ex (1/2)
+\setlength\leftmarginiii{2.75ex}
+
+\setbeamersize{text margin left=0.55cm}
+\setbeamersize{text margin right=0.55cm}
+
+%institute
+\def\beamer@andinst{~~}
+% Title page: DESY
+\defbeamertemplate*{title page}{DESY}
+{%
+  \@tempdima=\textwidth%
+  \advance\@tempdima by\beamer@leftmargin%
+  \advance\@tempdima by\beamer@rightmargin%
+  \vskip-20pt%
+  % Do NOT add the DESY dot: it is not round in Helvetica
+  \begin{beamercolorbox}[sep=0.53cm,wd=\the\@tempdima]{title}
+      \usebeamerfont{title}\inserttitle\par%
+  \end{beamercolorbox}%
+  \ifx\insertsubtitle\@empty%
+  \else%
+      \begin{beamercolorbox}[sep=0.55cm,left,wd=\the\@tempdima]{subtitle}
+          {\usebeamerfont{subtitle}\insertsubtitle\par}%
+      \end{beamercolorbox}
+
+      % \begin{beamercolorbox}[sep=0.55cm,wd=\the\@tempdima,left]{author}
+      % Set the box width to only 50% of the text width. This avoids
+      % covering the logo for very long headlines, but requires
+      % explicit unindentation.
+      \hskip-2.5ex
+      \begin{beamercolorbox}[sep=0.55cm,wd=0.5\textwidth,left]{author}
+         \vskip0.5cm
+         {\usebeamerfont{author}\usebeamercolor[fg]{author}\insertauthor}\break
+         {\usebeamerfont{author}\usebeamercolor[fg]{normal text}\insertdate}%
+      \end{beamercolorbox}%
+}
+
+
+% Part page: DESY
+\defbeamertemplate*{part page}{DESY}
+{%
+  \@tempdima=\textwidth%
+  \advance\@tempdima by\beamer@leftmargin%
+  \advance\@tempdima by\beamer@rightmargin%
+  \vskip-20pt%
+  % For parts: use chapter style, ie. do not repeat the talk title
+  % % Do NOT add the DESY dot: it is not round in Helvetica
+  % \begin{beamercolorbox}[sep=0.55cm,wd=\the\@tempdima]{title}
+  %     \usebeamerfont{title}\inserttitle\par%
+  % \end{beamercolorbox}%
+  \ifx\insertsubtitle\@empty%
+  \else%
+      \begin{beamercolorbox}[sep=0.54cm,left,wd=\the\@tempdima]{subtitle}
+          {\usebeamerfont{title}\usebeamercolor[fg]{title}\insertpart\par}%
+      \end{beamercolorbox}
+      \vskip1cm
+}
+
+% Itemize items, DESY
+\defbeamertemplate*{itemize item}{DESY}{\usebeamercolor[fg]{item}\hbox{\textbf{>}}}
+\defbeamertemplate*{itemize subitem}{DESY}{\TINY\usebeamercolor[fg]{subitem}\raise1ex\hbox{\vrule width 1ex height 1ex}\hskip1.5ex}
+\defbeamertemplate*{itemize subsubitem}{DESY}{\TINY\usebeamercolor[fg]{subitem}\raise1ex\hbox{\vrule width 1ex height 1ex}\hskip1.5ex}
+
+% Enumerate items, DESY
+\setbeamertemplate{enumerate items}[square]
+
+\mode
+<all>
