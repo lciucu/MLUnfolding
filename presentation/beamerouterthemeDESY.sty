@@ -134,7 +134,20 @@
   \vspace*{0.5cm}
   \llap{%
   \mbox{
-  \includegraphics[height=1.3cm]{img/DESY_Logo}%
+    \includegraphics[height=1.3cm]{img/DESY_Logo}%
+  \hspace*{0.5cm}
+  }
+  }% titleframe-sized logo
+}
+
+\defbeamertemplate*{sidebar right}{GENEVA}
+{%
+  % titlepage: set a larger DESY logo to the lower right
+  \vfill%
+  \vspace*{0.5cm}
+  \llap{%
+  \mbox{
+    \includegraphics[height=3.5cm]{img/My_Logo}%
   \hspace*{0.5cm}
   }
   }% titleframe-sized logo
@@ -167,6 +180,12 @@
 {%
 }
 
+\defbeamertemplate*{sidebar canvas right}{GENEVA}
+{%
+}
+
+
+
 % Frame title: DESY
 \defbeamertemplate*{frametitle}{DESY}%
 {%
@@ -197,6 +216,7 @@
 \setbeamertemplate{background canvas}[DESYTitle]
 \setbeamertemplate{sidebar canvas left}[DESYTitle]
 \setbeamertemplate{sidebar right}[DESYTitle]
+\setbeamertemplate{sidebar right}[GENEVA]
 \setbeamertemplate{footline}{}
 \begin{frame}[t]
 \vskip-\headheight%
