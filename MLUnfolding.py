@@ -72,11 +72,11 @@ overwriteSettings=False
 # stage 2: use the rf, rt, gfcat, gtcat to produce a NN training and store the model weights to a file
 # stage 3: use the NN to do further studies - not yet done
 # stage 4: make plots of the NN training - done
-#string_stage="1111" # all steps
+string_stage="1111" # all steps
 #string_stage="1000" # NN input
 #string_stage="0100" # NN train
 #string_stage="0010" # NN analyze
-string_stage="0001" # plots
+#string_stage="0001" # plots
 #string_stage="1101"
 #string_stage="0110"
 #string_stage="0101"
@@ -85,7 +85,7 @@ if overwriteSettings:
     string_stage=my_string_stage
 
 # output
-outputFolderName="./output13_2"
+outputFolderName="./output_10GeV"
 if overwriteSettings:
     outputFolderName=my_outputFolderName
 os.system("mkdir -p "+outputFolderName)
@@ -126,7 +126,7 @@ inputFileName="/afs/cern.ch/user/l/lciucu/public/data/MLUnfolding/user.yili.1844
 # as we treat both truth and reco at the same time to the NN and we need a function from reco to the truth
 maxValue=500.0 # in GeV,
 # the bin width for the leading jet pt
-binWidth=20.0 # in GeV
+binWidth=10.0 # in GeV
 # number of bins is calculated from these two
 NBins=int(maxValue/binWidth)
 if verbose or debug:
