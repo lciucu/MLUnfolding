@@ -20,7 +20,7 @@ Handout: Handout.pdf
 ../Handout.pdf: Handout.pdf
 	cp Handout.pdf ..
 
-Presentation.pdf: Presentation.tex Talk.tex macros.tex metadata.tex beamercolorthemeDESY.sty beamerfontthemeDESY.sty beamerinnerthemeDESY.sty beamerouterthemeDESY.sty beamerthemeDESY.sty
+Presentation.pdf: Presentation.tex Talk.tex myFrames.tex macros.tex metadata.tex beamercolorthemeDESY.sty beamerfontthemeDESY.sty beamerinnerthemeDESY.sty beamerouterthemeDESY.sty beamerthemeDESY.sty
 	$(TEX) Presentation
 	mv Presentation.aux tmp/
 	mv Presentation.log tmp/
