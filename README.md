@@ -69,6 +69,10 @@ During the DESY summer school project of 5 weeks there was only time to perform 
 
 This repository contains also the `LaTex` report that will summarise the technique and the results. At the very end we may add the key plots in `.png` format. It is not recommended to add on `GitLab` binary files such as the `.pdf` files.
 
+# Presentation
+
+This repository contains also a `LaTex` `Beamer` presentation with the plots produced. The [DESY template](https://pr.desy.de/e223/index_ger.html) is used.
+
 # How to edit this README
 
 The README is written for `GitLab` in `Markdown`. Take a look at this [command cheetsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
