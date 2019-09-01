@@ -84,11 +84,8 @@ string_stage="1111" # all steps
 if overwriteSettings:
     string_stage=my_string_stage
 
-# output
-outputFolderName="./output_10GeV"
-if overwriteSettings:
-    outputFolderName=my_outputFolderName
-os.system("mkdir -p "+outputFolderName)
+# output stem
+outputFolderNameStem="./output"
 
 list_stage=list(string_stage)
 doROOTRead=bool(int(list_stage[0]))
@@ -131,6 +128,14 @@ binWidth=10.0 # in GeV
 NBins=int(maxValue/binWidth)
 if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
+
+outputFolderNameSuffix="_%.fGeV"%binWidth+"_temp"
+if overwriteSettings:
+    outputFolderName=my_outputFolderNameStem+outputFolderNameSuffix
+else:
+    outputFolderName=outputFolderNameStem+outputFolderNameSuffix
+os.system("mkdir -p "+outputFolderName)
+
 nrBins_histo_ratio=[i-0.5 for i in range(NBins+1)]
 
 extensions="pdf,png,eps"
