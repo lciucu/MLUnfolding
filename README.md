@@ -73,6 +73,10 @@ This repository contains also the `LaTex` report that will summarise the techniq
 
 This repository contains also a `LaTex` `Beamer` presentation with the plots produced. The [DESY template](https://pr.desy.de/e223/index_ger.html) is used.
 
+# Other bibliography sources
+
+* \href{http://www.desy.de/~liyichen/Unfolding.pdf}{Unfolding report} by Yichen Li, DESY Zeuthen. 
+
 # How to edit this README
 
 The README is written for `GitLab` in `Markdown`. Take a look at this [command cheetsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
