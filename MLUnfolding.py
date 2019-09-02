@@ -72,14 +72,12 @@ overwriteSettings=False
 # stage 2: use the rf, rt, gfcat, gtcat to produce a NN training and store the model weights to a file
 # stage 3: use the NN to do further studies - not yet done
 # stage 4: make plots of the NN training - done
-string_stage="1111" # all steps
+#string_stage="1111" # all steps
 #string_stage="1000" # NN input
 #string_stage="0100" # NN train
 #string_stage="0010" # NN analyze
-#string_stage="0001" # plots
-#string_stage="1101"
-#string_stage="0110"
-#string_stage="0101"
+string_stage="0001" # plots
+#string_stage="0110" # only NN train and analyze
 
 if overwriteSettings:
     string_stage=my_string_stage
@@ -123,13 +121,13 @@ inputFileName="/afs/cern.ch/user/l/lciucu/public/data/MLUnfolding/user.yili.1844
 # as we treat both truth and reco at the same time to the NN and we need a function from reco to the truth
 maxValue=500.0 # in GeV,
 # the bin width for the leading jet pt
-binWidth=10.0 # in GeV
+binWidth=20.0 # in GeV
 # number of bins is calculated from these two
 NBins=int(maxValue/binWidth)
 if verbose or debug:
     print("maxValue",maxValue,"binWidth",binWidth,"NBins",NBins)
 
-outputFolderNameSuffix="_%.fGeV"%binWidth+"_temp"
+outputFolderNameSuffix="_%.fGeV"%binWidth+"_many"
 if overwriteSettings:
     outputFolderName=my_outputFolderNameStem+outputFolderNameSuffix
 else:
@@ -192,8 +190,35 @@ list_infoNN=[
     #["B3",8,150,200],
     #
     #["A1",8,3000,1000],
-    ["A1",8,150,1000],
+    #
+    #["A1",8,150,1000],
+    #["B3",4,150,200],
+    #
+    ["B1",4,150,200],
+    ["B2",4,150,200],
     ["B3",4,150,200],
+    ["B4",4,150,200],
+    ["B5",4,150,200],
+    ["B10",4,150,200],
+    ["C3",4,150,200],
+    ["D3",4,150,200],
+    # 
+    ["B3",1,150,200],
+    ["B3",2,150,200],
+    ["B3",8,150,200],
+    ["B3",16,150,200],
+    # 
+    ["B3",4,150,40],
+    ["B3",4,150,200],
+    ["B3",4,150,1000],
+    #
+    ["B3",4,300,40],
+    ["B3",4,300,200],
+    ["B3",4,300,1000],
+    #
+    ["B3",4,1000,40],
+    ["B3",4,1000,200],
+    ["B3",4,1000,1000],
     
 ]
 
@@ -241,7 +266,21 @@ list_listInfoToPlot=[
     #["final8", [ ["B3",4,350,200],["B3",8,350,200] ]],
     #["final8", [ ["B3",4,150,200],["B3",8,150,200] ]],
     #["final9", [ ["A1",8,3000,1000],["B3",4,150,200] ]],
-    ["final", [ ["A1",8,150,1000],["B3",4,150,200] ]],
+    # old and new
+    #["final", [ ["A1",8,150,1000],["B3",4,150,200] ]],
+    # layer
+    ["final_layer_1", [ ["B3",4,150,200],["B1",4,150,200],["B2",4,150,200],["B4",4,150,200],["B5",4,150,200],["B10",4,150,200], ]],
+    ["final_layer_2", [ ["B3",4,150,200],["B2",4,150,200],["B4",4,150,200],["B5",4,150,200] ]],
+    ["final_layer_3", [ ["B3",4,150,200],["B4",4,150,200],["B5",4,150,200] ]],
+    ["final_layer_4", [ ["B3",4,150,200],["C3",4,150,200],["D3",4,150,200] ]],
+    # k
+    ["final_layer_1", [ ["B3",4,150,200],["B3",1,150,200],["B3",2,150,200],["B3",8,150,200],["B3",16,150,200] ]],
+    ["final_layer_2", [ ["B3",4,150,200],["B3",2,150,200],["B3",8,150,200] ]],
+    # batch
+    ["final_batch_1", [ ["B3",4,150,200],["B3",4,150,40],["B3",4,150,1000] ]],
+    ["final_batch_2", [ ["B3",4,300,200],["B3",4,300,40],["B3",4,300,1000] ]],
+    ["final_batch_3", [ ["B3",4,1000,200],["B3",4,1000,40],["B3",4,1000,1000] ]],
+    
 ]
 
 list_metric=[
@@ -258,11 +297,14 @@ dict_metric_plotRange={
     #
     #"loss":[1.75,1.85],
     #"accuracy":[0.30,0.35],
-    "loss":[1.75,2.5],
-    "accuracy":[0.20,0.35],
+    #"loss":[1.75,2.5],
+    #"accuracy":[0.20,0.35],
     # 20 GeV bin
-    "loss":[1,3],
-    "accuracy":[0,1.0],
+    #"loss":[1,3],
+    #"accuracy":[0,1.0],
+    # zoomed in
+    "loss":[1.15,1.20],
+    "accuracy":[0.52,0.56],
 }
 
 list_optionTrainTest=[
@@ -278,7 +320,7 @@ list_outputType=[
 # https://stackoverflow.com/questions/22408237/named-colors-in-matplotlib
 # https://i.stack.imgur.com/lFZum.png
 #list_color="r,b,g,k,yellow,blueviolet,indianred,aqua,deeppink,slategrey".split(",")
-list_color="red,darkgreen,blue,black,yellow,blueviolet,indianred,aqua,deeppink,slategrey".split(",")
+list_color="darkgreen,red,black,blueviolet,slategrey,deepskyblue,aqua,deeppink,".split(",")
 #list_optionPlot="r-,g-,b-,k-,r--,b--,g--,k--".split(",")
 list_optionPlot="slategrey,deeppink,b-,k-,r--,b--,g--,k--".split(",")
 
@@ -391,14 +433,8 @@ def read_root_file(uproot_file,treeName,option,maxValue,binWidth):
     # meaning one element at a time, for example divide all jet values by the bin width
     nparray_var=np.array(list_var)
     print_nparray(treeName,option,"nparray_var",nparray_var)
-    # divide each var by the desired bin width to find out in which bin it falls into
-    # the bin is here as float, as only for the truth we need to make the bin width as integer by taking the floor
-    nparray_varBinFloat=nparray_var/binWidth
-    # notice how we divided a numpy array by a float number (binWidth) and that returns a numpy array 
-    # where each element of the first array is divided by that float number
-    print_nparray(treeName,option,"nparray_varBinFloat",nparray_varBinFloat)
-    # all done, we can return the numpy array of the variable
-    return nparray_varBinFloat
+    # done, ready to return
+    return nparray_var
 # done function
 
 def gen(uproot_file,option,maxValue,binWidth):
@@ -411,8 +447,17 @@ def gen(uproot_file,option,maxValue,binWidth):
         assert(False)
     # done if
     # we call the function read_root_file twice, once for reco (treeName=nominal) and once for truth (treName=particleLevel)
-    nparray_varBinFloat_recon=read_root_file(uproot_file,"nominal",option,maxValue,binWidth)
-    nparray_varBinFloat_truth=read_root_file(uproot_file,"particleLevel",option,maxValue,binWidth)
+    nparray_var_recon=read_root_file(uproot_file,"nominal",option,maxValue,binWidth)
+    nparray_var_truth=read_root_file(uproot_file,"particleLevel",option,maxValue,binWidth)
+    # make a plot overlaying truth and reco for the two cases
+    list_tupleArray=[]
+    list_tupleArray.append((nparray_var_truth,option+" truth"))
+    list_tupleArray.append((nparray_var_recon,option+" reco"))
+    outputFileName=outputFolderName+"/NN_plot1D_"+option+"_jetPt_truth_reco"
+    overlay_histogram_from_nparray_with_ratio(list_tupleArray,outputFileName=outputFileName,extensions=extensions,nrBins=NBins,histtype="step",info_x=["leading jet pt [GeV]"],info_y=["Number of jets"],title="jet pt in "+option,text=None,info_legend=["best"],list_color="indianred,aqua".split(","),doAddRatioPad=True,debug=False,verbose=False)
+    # for the NN inputs we need the variable divided by the bin width
+    nparray_varBinFloat_recon=nparray_var_recon/binWidth
+    nparray_varBinFloat_truth=nparray_var_truth/binWidth
     if verbose or debug:
         print("")
     print_nparray("nominal",option,"nparray_varBinFloat_recon",nparray_varBinFloat_recon)
@@ -535,17 +580,13 @@ def prepare_NN_model(NBins,nvar=1,layer="A",kappa=8):
         model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
         model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
         model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
-    elif layer=="C5":
-        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="C3":
         model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
         model.add(keras.layers.Dense(int(0.5*kappa)*NBins,activation='relu'))
         model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
-        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
-    elif layer=="D5":
-        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
+    elif layer=="D3":
         model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
         model.add(keras.layers.Dense(2*kappa*NBins,activation='relu'))
-        model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
         model.add(keras.layers.Dense(kappa*NBins,activation='relu'))
     else:
         print("layer",layer,"not known. Choose A1,B1,B2,B3,B4,B5,B10,C5,D5. Will ABORT!!!")
@@ -774,7 +815,7 @@ def overlayGraphsValues(list_tupleArray,outputFileName="overlay",extensions="pdf
 # to color different bins in different colors, like a rainbow gradient https://stackoverflow.com/questions/23061657/plot-histogram-with-colors-taken-from-colormap
 # obtain the max value: # https://stackoverflow.com/questions/15558136/obtain-the-max-y-value-of-a-histogram
 # plotting two histograms in one plt.hist did not work for me easily, but I loop over list of arrays anyway, as I need to give them different labels and colors etc
-def overlay_histogram_from_nparray_with_ratio(list_tupleArray,outputFileName="./output_histo_from_nparray",extensions="png,pdf",nrBins=100,histtype="step",info_x=["x-axis"],info_y=["Number of points"],title="Title",text=None,info_legend=["best"],list_color="r,g,b,k,y".split(","),doAddRatioPad=False,debug=False,verbose=False):
+def overlay_histogram_from_nparray_with_ratio(list_tupleArray,outputFileName="./output_histo_from_nparray",extensions="png,pdf,eps",nrBins=100,histtype="step",info_x=["x-axis"],info_y=["Number of points"],title="Title",text=None,info_legend=["best"],list_color="r,g,b,k,y".split(","),doAddRatioPad=False,debug=False,verbose=False):
     debug=True
     if debug:
         print("Start draw_histogram_from_nparray()")
