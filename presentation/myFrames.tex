@@ -20,10 +20,10 @@
 \begin{enumerate}
 \item[o] Theoretical simulation: generated (truth) are known $\rightarrow$ observed (reco).
 \item[o] Experimental analysis: observed (reco) are known $\rightarrow$ truth (nature)
-\item[o] Plot taken from the \href{http://www.desy.de/~liyichen/Unfolding.pdf}{report of Yichen Li}. 
 \end{enumerate}
 \centering
-\includegraphics[height=0.48\textheight]{./plots/jetPt_truth_reco.png}
+\includegraphics[height=0.53\textheight]{../output_20GeV/NN_plot1D_train_jetPt_truth_reco.pdf}
+\includegraphics[height=0.53\textheight]{../output_20GeV/NN_plot1D_test_jetPt_truth_reco.pdf}
 \begin{enumerate}
 \item[o] The shapes of the distributions of the truth and reco observables for the training of the unfolding are very similar, but not identical (especially in the first bins). 
 \end{enumerate}
@@ -35,11 +35,11 @@
 \begin{enumerate}
 \item[o] The migration matrix between truth and reco is used in the traditional unfolding.
 \item[o] Unfolding = inferring the generated (truth) from the observed (reconstructed).
-\item[o] Plot taken from the \href{http://www.desy.de/~liyichen/Unfolding.pdf}{report of Yichen Li}. 
 \end{enumerate}
 \centering
-\includegraphics[height=0.48\textheight]{./plots/jetPt_migration_matrix.png}
+\includegraphics[height=0.42\textheight]{./plots/jetPt_migration_matrix.png}
 \begin{enumerate}
+\item[o] Plot from the same data, from the \href{http://www.desy.de/~liyichen/Unfolding.pdf}{report of Yichen Li}. The number in a cell represents the probability of an event in the truth bin i to be reconstructed in a reco bin j.
 \item[o] The more diagonalizable matrix, the easier unfolding will be.
 \item[o] Events are migrating from one truth bin to other bins for reco, and vice-versa.
 \end{enumerate}
@@ -102,10 +102,8 @@
 \begin{enumerate}
 \item[o] One file with 43076 events (and leading jets). Half (21538) in training, half in testing. 
 \item[o] jet pt: range=0-500 GeV, bin width=20 GeV, number of bins = 500/20 = 25.
+\item[o] Chose the NN training hyper-parameters by changing one at a time while keeping the other constant, and choosing those with largest accuracy and smallest loss values.
 \end{enumerate}
-\ \\
-\begin{center}
-  \label{tab:table1}
   \resizebox{\textwidth}{!}{
     \begin{tabular}{|l|l|l|} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
       \hline
@@ -124,7 +122,6 @@
       \hline
     \end{tabular}
   }
-\end{center}
 \end{table}
 \end{frame}
 \clearpage
