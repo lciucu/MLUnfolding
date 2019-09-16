@@ -18,6 +18,8 @@
 \usepackage{booktabs}
 \usepackage{multirow}
 
+\input{input/Definitions}
+
 \setlength{\headheight}{15pt}
 
 \geometry{left=3 cm,right=3 cm, top=3.5 cm, bottom=3.5 cm}
@@ -41,7 +43,7 @@
 
 \textbf{
 \begin{huge}
-Machine learning for jet energy unfolding \\ in the ttbar e-mu analysis
+Unfolding technique for the \ttbaremu~analysis \\via machine learning (deep neural network)
 \end{huge}
 }
 
@@ -62,7 +64,7 @@ Machine learning for jet energy unfolding \\ in the ttbar e-mu analysis
 \vspace{0.7cm}
 \large{Supervisors:\\Thorsten Khul, Yichen Li}\\
 \vspace{0.7cm}
-\includegraphics[width=0.5\textwidth]{./plots/LogoATLAS.png}\\
+\includegraphics[width=0.4\textwidth]{./plots/LogoATLAS.png}\\
 \vspace{0.7cm}
 \Large{\today}
 
@@ -71,7 +73,7 @@ Machine learning for jet energy unfolding \\ in the ttbar e-mu analysis
 \vfill
 
 \begin{abstract}
-The validity of the Standard Model is tested also through precision measurements of the top quark properties. Inferring from measured quantities what happens in reality in nature is called unfolding. Traditional unfolding methods via migration matrices have limitations. A new method of unfolding using machine learning via neural networks (NN) has been proposed in a paper. In this report this NN technique is applied for unfolding the jet energy transverse momentum in the context of the ttbar e-mu analysis in ATLAS. A deep NN architecture is optimised for this task, leading to an improved performance over the default architecture suggested in the paper.
+The validity of the Standard Model is tested also through precision measurements of the top quark properties. Inferring from measured quantities what happens in reality in nature is called unfolding. Traditional unfolding methods via migration matrices have limitations. A new method of unfolding using machine learning via neural networks (NN) has been proposed in a paper. In this report this NN technique is applied for unfolding the jet energy transverse momentum in the context of the \ttbaremu~analysis in ATLAS. A deep NN architecture is optimised for this task, leading to an improved performance over the default architecture suggested in the paper.
 \end{abstract}
 
 \vfill
@@ -84,11 +86,11 @@ The validity of the Standard Model is tested also through precision measurements
 \begin{figure}[htbp]
      \begin{minipage}{0.5\textwidth}
       \centering
-      \includegraphics[width=0.6\columnwidth]{./plots/LogoUGeneva.jpg}
+      \includegraphics[width=0.66\columnwidth]{./plots/LogoUGeneva.jpg}
      \end{minipage}\hfill
      \begin{minipage}{0.5\textwidth}
       \centering
-      \includegraphics[width=0.3\columnwidth]{./plots/LogoDESY.png}
+      \includegraphics[width=0.33\columnwidth]{./plots/LogoDESY.png}
      \end{minipage}
    \end{figure}
 
@@ -96,18 +98,16 @@ The validity of the Standard Model is tested also through precision measurements
 
 \begin{document}
 
-
-
 \maketitle
 
 \tableofcontents
 \newpage
 \setcounter{page}{1}
 
-\input{sections/Introduction}
-\input{sections/NeuralNetworks}
-\input{sections/Method}
-\input{sections/Bibliography}
+\input{input/Introduction}
+\input{input/NeuralNetworks}
+\input{input/Method}
+\input{input/Bibliography}
 
 \end{document}
 
