@@ -1,6 +1,15 @@
 \section{Neural Networks}
 \label{sec:NeuralNetworks}
 
+\subsection{The method}
+\label{sec:Method}
+
+My first step was to study a code example using some toy data in a JupyterNotebook~\cite{AGlazov}. At the beginning I ran the code on a cloud (Swan). 
+
+\ \\The next step was to run it on \texttt{lxplus}. For this it was needed to run after \texttt{ssh}-ing to a \texttt{lxplus} machine a singularity command~\cite{Singularity} and then to my own laptop.
+
+\ \\To train the neural network it was needed to use the Python library Keras~\cite{keras} and for backend TensorFlow~\cite{tensorflow}. My method of sampling was implemented using numpy~\cite{numpy}.
+
 The goal of this project is to adapt a code example of machine learning unfolding (MLUnfolding) using toy data to use it for the jet energy reconstruction of \ttbaremu~analysis.
 
 \ \\In this project one of the problems that we want to solve is the correction of detector smearing using Machine Learning (ML). I have implemented this method using a sequential Neural Network. The unfolding corresponds to an inversion of the migration matrix. Unfolding is the procedure to infer the truth data (what happens in reality in nature) from the reconstructed data (observed and measured in our experiment by our detector). The categorisation is a common problem for the modern Machine Learning methods. Possible methods could be Boosted Decision Trees (BDT) and Artificial Neural Networks (ANN), or in short Neural Networks (NN). NNs with various architectures can be tried for the unfolding problem. The unfolding involves several iterative steps of ML using a NN training in TensorFlow via Keras, in Python. The NN takes as input the reconstructed values, and has as output the truth values.
