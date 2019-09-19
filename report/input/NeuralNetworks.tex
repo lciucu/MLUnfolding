@@ -1,36 +1,127 @@
-\section{Neural Networks}
+\section{Neural Network Training}
 \label{sec:NeuralNetworks}
 
-\subsection{The method}
-\label{sec:Method}
+\subsection{Coding environment}
+\label{sec:CodingEnvironment}
 
-My first step was to study a code example using some toy data in a JupyterNotebook~\cite{AGlazov}. At the beginning I ran the code on a cloud (Swan). 
+The toy data code example~\cite{AGlazovCode} uses Jupiter Notebook. The ML commands can be run either from Jupiter Notebook or from a regular Python script from a laptop with Anaconda with Python2 or Python3. For this problem, one needs the ability to run \texttt{ROOT} in the same environment to read the \texttt{.root} file with the jet data from the analysis. ROOT can not be run from Anaconda, however. One option is to split the code into two separate files, each run in separate environments and communicating to each other via numpy arrays. This is not ideal, however, since optimising a NN requires many steps. One needs the ability to have all code in one environment and run it all at once.
 
-\ \\The next step was to run it on \texttt{lxplus}. For this it was needed to run after \texttt{ssh}-ing to a \texttt{lxplus} machine a singularity command~\cite{Singularity} and then to my own laptop.
+\ \\Another option is to run the Jupiter Notebook in the server provided by ATLAS called SWAN~\cite{SWAN}. This environment has access to both Keras and ROOT at the same time. Although all commands can be run at once, the server would often die while running due either to bad wifi connection, or due to CERN server being busy.
 
-\ \\To train the neural network it was needed to use the Python library Keras~\cite{keras} and for backend TensorFlow~\cite{tensorflow}. My method of sampling was implemented using numpy~\cite{numpy}.
+\ \\To run effectively, it is better to run from only one Python script, instead of from one Jupiter Notebook. The recommended solution is to run from CERN's lxplus machines. Right after the \texttt{ssh}, a \texttt{singularity}~\cite{singularity} ennviroment is set up via a \texttt{docker} container that contains the ML sofware. While \texttt{ROOT} is not contained, the \texttt{uproot}~\cite{uproot} library is included. \texttt{uproot} allows to read the \texttt{.root} files in numpy arrays, the data types that are used natively by the ML libraries such as \texttt{TensorFlow} inside \texttt{Python}. It is this setup that is found to be the most efficient and is used in this project.
 
-The goal of this project is to adapt a code example of machine learning unfolding (MLUnfolding) using toy data to use it for the jet energy reconstruction of \ttbaremu~analysis.
+\subsection{k-fold}
+\label{sec:k-fold}
 
-\ \\In this project one of the problems that we want to solve is the correction of detector smearing using Machine Learning (ML). I have implemented this method using a sequential Neural Network. The unfolding corresponds to an inversion of the migration matrix. Unfolding is the procedure to infer the truth data (what happens in reality in nature) from the reconstructed data (observed and measured in our experiment by our detector). The categorisation is a common problem for the modern Machine Learning methods. Possible methods could be Boosted Decision Trees (BDT) and Artificial Neural Networks (ANN), or in short Neural Networks (NN). NNs with various architectures can be tried for the unfolding problem. The unfolding involves several iterative steps of ML using a NN training in TensorFlow via Keras, in Python. The NN takes as input the reconstructed values, and has as output the truth values.
+NN training requires that the data is split in two independent sets. Some is used to train the NN, while the other is used for testing (also called validation). In this project half of the data (the events with even index) is used in training, and the other half of the data (the events with odd index) is used in testing. Since the data is split in two, it is said to have a k-fold=2. It is the simplest case and is what is used in this report.
 
-\ \\The goal of the study is to adapt this example to use real data coming from the jet \pt~distribution from the \ttbaremu~analysis. We use this \texttt{.root} flat tree~\cite{RootFile}. This file contains both the reconstructed and truth jets, already matched. Meaning the i$^{\rm th}$ event from reco, corresponds to the i$^{\rm th}$ event from truth. Each jet collection contains jets already the jets ranked by \pt. We take index 0 to consider the leading reco jet and the leading truth jet.
+\ \\Since there are 43076 events, there are 21538 events in training and also 21538 in testing. Each event has a collection of jets, from which the leading jet in \pt~is used for both the reco (input) and truth (output).
 
-\ \\Given the leading jet \pt~as a continuous reco value, we want to find out in which jet \pt~bin does the truth jet falls. The jet bin is configurable, say 10 \GeV, or 20 \GeV. The input is a continuous value, but the output is a discrete value, that can take values from 0 to 24 if we consider 20 \GeV~bins from 0 to 500 \GeV. For example, bin index 0 contains jets with \pt~from 0 to 20 \GeV, bin index 1 contains jets with \pt~from 20 \GeV~to 40 \GeV, \emph{etc.}. Jets with \pt~larger than 500 \GeV~have values set by hand to 499.999 \GeV, and enter in the last possible bin index, number 24. It is equivalent to moving the overflow bin of a histogram to the last bin of the histogram. 
+\ \\Other possibilities involve having a k larger than 2, for example 5. In that case, the data is split into 5 independent parts. The training and testing contain 5 consecutive steps. One trains in 4 parts and tests in 1, then repeats with another 1 until the data is evaluated once in each event.
 
-\ \\Given the output can take any value from 0 to 24, the problem we try to solve is a classification, and the possible labels are not only two (as in a simple signal to background classification, typically used in ATLAS), but a more complex one, with 25 labels. The NN will return the probability that for a given jet its \pt~falls in any of these bins. The total probability for all bins must be 1.0. This is ensured by the \emph{softmax} activation function for the last layer of the NN. We then consider the bin with the largest probability as our choice by the NN. The predicted bin value can then be compared with the true bin value when making the plots of this project.
+\subsection{Neural network overview}
+\label{sec:NeuralNetworkOverview}
 
-\ \\To optimize the NN performance, we take as input in fact not the jet \pt, but the jet \pt~divided by the bin width. This is the jet \pt~bin as a real value. Making things more consistent with the output being the integer jet \pt~bin value for the truth.
+In machine learning (ML) a solution for a problem is found without being explicitly programmed. The two main classes of ML are supervised and unsupervised. In this project supervised learning is used, as the output is known and is labeled. The machine learning method tries to learn what the labels are as a function of the input.
 
-\ \\ Neural Networks are an example of Machine Learning. In this way the computers learn a solution for a problem without being explicitly programmed. The two main classes of ML are supervised and unsupervised. 
-In this project I used supervised ML. ......~\cite{AndrewNg}.
+\ \\Several machine learning algorithms can be used to perform the classification task. In this project neural networks~\cite{AndrewNg} are used. In general, to find a multidimensional highly non-linear function, it is efficient to train a NN. The NN algorithm is inspired from the brain structure and functions. The brain contains millions of neuron cells forming a network where electro-chemical impulses are being passed between them. An artificial neural network is formed by a number of interconnected artificial \emph{neurons}, or \emph{nodes} respects this architecture.
 
-\ \\If we have the function Pi(y), a multidimensional highly non-linear, an efficient way to do this procedure is with an NN. This was inspired by the brain structure, which contains millions of neurone cells forming a network with electrochemical impulses passing between them. An artificial neural network formed by a number of interconnected artificial \emph{neurons}, or "nodes" respects this architecture. 
+\ \\A neural network is formed by several layers, each containing several nodes. The number of nodes on the first (input) and last (output) layers are fixed by the problem to solve. They are 1 and 25, respectively, for the problem presented in this project. The layers in between are called hidden layers. Their number and the number of their nodes can be optimised for hte particular problem. If there is one hidden layer, the NN is said to be \emph{shallow}. If there are more than one hidden layer, the NN is said to be \emph{deep}. If each node is connected to all nodes of the layer before and after, the NN is said to be fully connected. A general structure of a fully connected deep NN (DNN) is presented in Figure~\ref{fig:DNN}.
 
-\ \\A network is formed by several ayers of nodes connected in series. Each node takes a weighted linear combination of the outputs from nodes of the previous layer, applies "activation function", then outputs the result do the next layer~\cite{AndrewNg}.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.6\textwidth]{./plots/DNNArchitecture.png}
+  \caption{Diagram of a general architecture of a DNN. Credit image: O'Reilly.~\cite{OReilly}.}
+  \label{fig:DNN}
+\end{figure}
 
-\ \\Using a "loss" function we can describe the difference between the predicted and real outputs, like the mean squared error between real and predicted. The weights associated with each node is modifies via an algorithm, and from here we can deduce that the loss function decreases and training increases.
+\ \\The \emph{Universal Approximation Theorem} states that a neural network with one \emph{hidden layer} can in principle approximate any N-dimensional function to an arbitrary degree of accuracy, given a sufficiently large (though finite) number of nodes. In practice however it is more suitable to use multiple hidden layers connected in series~\cite{AndrewNg}.
 
-\ \\We know from The \emph{Universal Approximation Theorem} that a neural network with one \emph{hidden layer} of nodes between input and output can in principle approximate any N-dimensional function to an arbitrary degree of accuracy, given a sufficiently large (though finite) number of nodes. 
+\ \\In a fully connected NN, each node takes a weighted linear combination of the outputs from nodes of the previous layer, adds its own bias values, and applies an \emph{activation function}, then outputs the result to the nerons of the next layer, as illustrated in Figure~\ref{fig:Neuron}. The activation function is choosen via optimisation for each neuron when the architecture of the NN is defined. 
 
-\ \\In practice it is more suitable to use multiple hidden layers connected in series~\cite{AndrewNg}.
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.6\textwidth]{./plots/Neuron.png}
+  \caption{Diagram of a neuron or node in a NN, with its weight inputs, its bias and the output via the activation function. Credit image: The Fork~\cite{TheFork}.}
+  \label{fig:Neuron}
+\end{figure}
+
+\ \\Once the NN architecture is set the layers, nodes and activation functions, the total function of the NN is parametrized by all the weights for the connections between nodes plus the biases of each node. Training the NN means learning these weights so that the NN function can predict well the output when a new data not seen before is taken as input.
+
+\ \\NN training is done learning on the training dataset and testing on the testing dataset. Running once over all the data from training and testing represents an \emph{epoch}. During an epoch, events are analysed in groups called \emph{batches}. The number of epochs to run on and the number of events in each batch can be optimised.
+
+\ \\ Let's take a look at how the NN training happens. At first the NN has random values for the weights and biases. For each of the events in the first batch, data comes in, and the NN predicts an output values, that are at first very different from the true desired output value. To evaluate how far away are the predicted output from the desired output, a \emph{loss} function is defined that can be chosen from several formulas, but have the generic form of a sum over the absolute values of these differences. The goal of the NN training is to update the values of the weights and biases so that the loss function is minimized. After the first batch, the NN changes the weights via a back-propagation aglorithm that can be selected from several, and usually it is a form of gradiant descent. For each new batch, the weights and biases change, and become continously closer to the correct values, as the loss function becomes gradually smaller. When all the training events are used, the first epoch is finished. The NN function at this point is then applied to the new dataset from the testing dataset, which is not split in batches, and a loss function is also calculated. The entire procedure repeats for the number of epochs chosen. At the end, the final weights and biases define the final NN that has been learned.
+
+\ \\There is also another figure of merit of how well does a NN perform in training and testing. It is called \emph{accuracy} and is related to the number of of true positives or false negatives. The larger the accuracy, the better.
+
+\ \\For the training dataset, the loss and accuracy values always improve. But in the testing dataset they can start to degrade if we train for too many epochs. By degrading it means that the loss value starts to grow, and the accuracy value starts to decrease. That is called over-training and consists of memorizing the inputs, and thus not being able to predict correctly any more for new inputs. 
+
+\subsection{Neural network optimisation}
+\label{sec:NeuralNetworkOptimisation}
+
+An optimisation of the NN training hyper-parameters described in the Section~\ref{sec:NeuralNetworkOverview} is made by changing only one at a time, while keeping the other constant. The best choice is the one with largest accuracy and smallest loss values. The best of the studied NNs is denoted as the new NN. It is a deep NN. The NN from the code example is denoted as the old NN. It is a shallow NN. Figure~\ref{fig:NNArchitecture} visualises the architectures and activation functions of the old NN (top) and the new NN (bottom).
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.9\textwidth]{../presentation/plots/NNArchitecture.jpg}
+  \caption{NN architectures and activation functions for the old and shallow NN (top) and the new and deep NN (bottom).}
+  \label{fig:NNArchitecture}
+\end{figure} 
+
+\ \\The input and output layers are the same, constrained by the physics problem to solve. The input layer has only one node and uses the \emph{linear} activation function. It means the input data is passed out from the first neuron. The output layer has 25 output variables. It uses the \emph{softmax} activation function~\cite{softmax}, which ensures that the output of each node is a number between 0 and 1 and the sum of all these numbers is exactly 1. This ensures that the value of each node is interpreted as the probability that the jet falls in the bin index represented by that node.
+
+\ \\The hidden layers have differences. The old NN has only one layer with very many nodes. The new NN has three layers, each with fewer nodes. Both NN use the same \emph{ReLU} activation function~\cite{ReLU}. ReLU is the recommended modern activation function to use as default when starting to study a new problem. The ReLu activation function is zero for negative values and the diagonal for positive values, as seen in Figure~\ref{fig:ReLU}. In future developments of the project, more complex activation functions can be used.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.5\textwidth]{./plots/ReLU.png}
+  \caption{The ReLu activation function is zero for negative values and the diagonal for positive values~\cite{ReLU}.}
+  \label{fig:ReLU}
+\end{figure} 
+
+\ \\The possible choices in hyper-parameters comparing the old and the new NN are summarised in Table~\ref{tab:NNOldNew}.
+
+\begin{table}[h!]
+  \resizebox{\textwidth}{!}{
+    \begin{tabular}{|l|l|l|} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      \hline
+      \textbf{Choice} & \textbf{Old NN (toy data example)} & \textbf{New NN (my best choice)}\\
+      \hline
+      number of nodes per input layer & 1 & 1 \\
+      number of nodes per output layer & ${\rm Nbins}=25$ & ${\rm Nbins}=25$ \\
+      Number of hidden layers & 1 & 3 \\
+      ${\rm k}$ & 8 & 4 \\
+      Number of nodes per layer & ${\rm k}\cdot {\rm Nbins}^2=5000$ & ${\rm k}\cdot {\rm Nbins}=100$ \\
+      activation function input & linear & linear \\
+      activation function hidden & ReLU & ReLU \\
+      activation function output & softmax & softmax \\
+      batch size & 1000 & 200 \\
+      number of epochs & 150 & 150 \\
+      \hline
+    \end{tabular}
+  }
+\caption {NN architecture and hyper-parameters comparing for the old NN, suggested in the toy data paper, and the new NN, from the optimisation of this study.}
+\label{tab:NNOldNew}
+\end{table}
+
+\ \\Figure~\ref{fig:accuracylossTrainTest} shows the overlay of train and test for the two figures of merit (accuracy and loss). The train and test curves are very similar. This confirms that the NNs are not overtrained. Figure~\ref{fig:accuracylossOldNew} shows the overlay of the old and the new NNs for the two figures of merit. For the accuracy, the larger the better. For the loss, the smaller the better. The new NN is better than the old NN for both figures of merit. 
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_optionTrainTest_accuracy_NN_l_A1_k_8_e_150_b_1000.pdf}
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_optionTrainTest_accuracy_NN_l_B3_k_4_e_150_b_200.pdf}\\
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_optionTrainTest_loss_NN_l_A1_k_8_e_150_b_1000.pdf}
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_optionTrainTest_loss_NN_l_B3_k_4_e_150_b_200.pdf}
+  \caption{Overlay of train and test for the accuracy (top) and loss (bottom). Old NN (left) and new NN (right).}
+  \label{fig:accuracylossTrainTest}
+\end{figure}
+
+\begin{figure}[b]
+  \centering
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_train_accuracy_NN_final.pdf}
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_test_accuracy_NN_final.pdf}\\
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_train_loss_NN_final.pdf}
+  \includegraphics[width=0.45\textwidth]{../output_20GeV/NN_plot1D_test_loss_NN_final.pdf}
+  \caption{Overlay with old and new NN for the accuracy (top) and loss (bottom). Train (left) and test (right).}
+  \label{fig:accuracylossOldNew}
+\end{figure}
