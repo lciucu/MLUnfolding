@@ -50,7 +50,7 @@ As the bin width is decreased continuously closed to infinitesimal values, the m
   \label{fig:CodeSoftware}
 \end{figure}
 
-\ \\The goal of the study is to adapt this example to use real data coming from the jet \pt~distribution from the \ttbaremu~analysis. We use this \texttt{.root} flat tree~\cite{RootFile}. This file contains both the reconstructed and truth jets, already matched. Meaning the i$^{\rm th}$ event from reco, corresponds to the i$^{\rm th}$ event from truth. Each jet collection contains jets already the jets ranked by \pt. We take index 0 to consider the leading reco jet and the leading truth jet.
+\ \\The goal of the study is to adapt this example to use real data coming from the jet \pt~distribution from the \ttbaremu~analysis. We use this \texttt{.root} flat tree~\cite{RootFile}. This file contains both the reconstructed and truth jets, already matched. Meaning the i$^{\rm th}$ event from reco, corresponds to the j$^{\rm th}$ event from truth. Each jet collection contains jets already the jets ranked by \pt. We take index 0 to consider the leading reco jet and the leading truth jet.
 
 \ \\Using this approach, the leading jet \pt~unfolding is formulated in the example illustrated in Figure~\ref{fig:PhysicsProblem}. For both reco and truth, \pt~larger than 500 \GeV~are changed to 499.999 \GeV, and thus moved to the last bin. This is equivalent to moving the overflow bin of a histogram to the last bin of a histogram. The truth and reco are thus ensured to have the same number of potential bins (25), given the 0-500 \GeV~range and the bin width of 20 \GeV. The simplest case of only one variable is considered: the jet \pt, or more exactly, the jet \pt~bin. Let's consider an example for the reconstructed jet (the input of unfolding) and the truth jet (the output of unfolding).
 
@@ -61,7 +61,7 @@ As the bin width is decreased continuously closed to infinitesimal values, the m
   \label{fig:PhysicsProblem}
 \end{figure}
 
-\ \\For a reconstructed jet, the ratio between the \pt and the bin width represents the input to the machine learning. For example, for a 57.8 \GeV~jet, the value is 2.89. The jet would fit in the third bin, or the bin of index 2 (index values start at 0).
+\ \\For a reconstructed jet, the ratio between the \pt~and the bin width represents the input to the machine learning. For example, for a 57.8 \GeV~jet, the value is 2.89. The jet would fit in the third bin, or the bin of index 2 (index values start at 0).
 
 \ \\For a truth jet, things are similar, but a bit more complex. Imagine the same jet has a different value for the truth, equal with 60.4 \GeV. Dividing by the bin width, 3.02 is obtained. The truth jet falls in the fourth bin, or the bin of index 3. The goal of the unfolding via machine learning is to learn and then predict, or infer, this number 3. 3 is only one possible answer out of finate number of posibilities corresponding to the 25 bins. Each bin can be considered one category of potential output. Each jet belongs to only one category. This problem is called classification and can indeed be solved via machine learning. To note that in this method is not attempted to predict exactly the \pt~of the truth jet. There would be a continous interval of possible values. Such a problem is called regression. It is also possible to be solved via machine learning, but it is more complex. 
 
