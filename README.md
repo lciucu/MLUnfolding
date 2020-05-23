@@ -67,15 +67,15 @@ During the DESY summer school project of 5 weeks there was only time to perform 
 
 # Report
 
-This repository contains also the `LaTex` report that will summarise the technique and the results. At the very end we may add the key plots in `.png` format. It is not recommended to add on `GitLab` binary files such as the `.pdf` files.
+This repository contains also the `LaTex` report that will summarise the technique and the results. At the very end we may add the key plots in `.png` format. The `.pdf` of the report is [here](https://gitlab.cern.ch/lciucu/MLUnfolding/-/blob/master/report/reportMLUnfolding.pdf).
 
 # Presentation
 
-This repository contains also a `LaTex` `Beamer` presentation with the plots produced. The [DESY template](https://pr.desy.de/e223/index_ger.html) is used.
+This repository contains also a `LaTex` `Beamer` presentation with the plots produced. The [DESY template](https://pr.desy.de/e223/index_ger.html) is used. The `.pdf` of the presentation is [here](https://gitlab.cern.ch/lciucu/MLUnfolding/-/blob/master/presentation/Presentation.pdf).
 
 # Other bibliography sources
 
-* \href{http://www.desy.de/~liyichen/Unfolding.pdf}{Unfolding report} by Yichen Li, DESY Zeuthen. 
+* [Unfolding report](http://www.desy.de/~liyichen/Unfolding.pdf) by Yichen Li, DESY Zeuthen. 
 
 # How to edit this README
 

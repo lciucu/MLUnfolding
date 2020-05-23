@@ -1,4 +1,8 @@
-﻿<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+﻿## Summary
+
+Change your `LaTex` compiler to `LuaLaTex`, then compile `Presentation.tex`, which in turn will get the slies from `Talk.tex`. 
+
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <!-- markdownlint-disable MD003 MD033 MD034 -->
 
 # DESY Beamer Style
