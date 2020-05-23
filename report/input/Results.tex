@@ -1,0 +1,65 @@
+\section{Results}
+\label{sec:Results}
+
+The shapes of the distributions of the truth and reco leading jet \pt~observables, used as the NN output and input, are very similar, but not identical (especially in the first bins), as illustrated in Figure~\ref{fig:jetPt} for the training set (left) and for the testing set (right). From the jet \pt~distribution, given the bin width, the distribution of the index of the jet \pt~bin is built. The true output (generated, truth) vs input (reconstructed) is illustrated in Figure~\ref{fig:ptIndexNoTrained}.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_train_jetPt_truth_reco.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_test_jetPt_truth_reco.pdf}
+  \caption{Overlay with ratio pad of the truth and reco leading jet \pt. Train (left) and test (right).}
+  \label{fig:jetPt}
+\end{figure}
+
+
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_train_jetPtBin_NN_noTrained.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_test_jetPtBin_NN_noTrained.pdf}
+  \caption{Overlay with ratio pad of the number of the bin of the truth and reco leading jet \pt. Train (left) and test (right).}
+  \label{fig:ptIndexNoTrained}
+\end{figure}
+
+\ \\Once the NNs are trained, the output of the NNs is predicted. The bin with the largest probability is chosen as the predicted bin index. The distributions of the index of the jet \pt~are overlaid in Figure~\ref{fig:ptIndexFinal} for the true output (blue) and the predicted unfolded output for the old NN (red) and the new NN (green). The new NN architecture is closer to the true output than the old NN. The old NN has some larger spikes and even some empty bins.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_train_jetPtBin_NN_final.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_test_jetPtBin_NN_final.pdf}
+  \caption{Overlay with ratio pad of the number of the bin of the truth (blue), the predicted truth by the old NN (red) and the predicted truth by the new NN (green). Train (left) and test (right).}
+  \label{fig:ptIndexFinal}
+\end{figure}
+
+\ \\Another figure of merit that can be calculated is similar to the loss function. Instead of adding all values differences between the truth and the predicted truth in quadrature, the distribution of these differences is plotted. Both outputs are integers, as representing bin indices. Therefore the difference is also an integer. The greater the count at zero difference and the narrower the peak, the better. The entire training exercise is done also for other bin widths as well: 10, 20, 50, 100 \GeV, as compared in Figure~\ref{fig:binIndexPredictedMinusTruel}. In all cases, teh new NN performs better than the old NN. However, the smaller the bin width, the bigger the improvement of the new NN on top the old NN. To make finer predictions, it is ideal to have the bin width as small as possible. Then the new NN improves the most.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.49\textwidth]{../output_10GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_10GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}\\
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}\\
+  \includegraphics[width=0.49\textwidth]{../output_50GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_50GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}\\
+  \includegraphics[width=0.49\textwidth]{../output_100GeV/NN_plot1D_train_outputPredictedMinusTrue_NN_final.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_100GeV/NN_plot1D_test_outputPredictedMinusTrue_NN_final.pdf}\\
+  \caption{Overlay with ratio pad of the difference between the predicted bin index and the correct bin index, for the old NN (red) and the new NN (green). From top to bottom, the bin widths of 10, 20, 50, 100 \GeV. Train (left) and test (right).}
+  \label{fig:binIndexPredictedMinusTruel}
+\end{figure}
+
+\ \\Finally, the 2D histogram migration matrices of the index of the jet \pt~can be built, as illustrated in Figure~\ref{fig:2DMigrationMatrix}. The closer to a diagonal matrix, the better. In all plots, the real true value is on the horizontal. In the top plots on the vertical there the reconstructed. This plot is used in the traditional unfolding method. In the middle plots, on the vertical there is the truth predicted by the old NN. It is noticed that some bins are empty. In the bottom plots on the vertical tehre is the truth predicted by the new NN. The migration matrix is closer to being a diagonal for the new NN than for the old NN, further supporting that the new NN training. is better than the old NN training.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot2D_train_outputTrue_input.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot2D_test_outputTrue_input.pdf}\\
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot2D_train_outputTrue_outputPredicted_NN_l_A1_k_8_e_150_b_1000.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot2D_test_outputTrue_outputPredicted_NN_l_A1_k_8_e_150_b_1000.pdf}\\
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot2D_train_outputTrue_outputPredicted_NN_l_B3_k_4_e_150_b_200.pdf}
+  \includegraphics[width=0.49\textwidth]{../output_20GeV/NN_plot2D_test_outputTrue_outputPredicted_NN_l_B3_k_4_e_150_b_200.pdf}\\
+  \caption{2D histogram representing migration matrices of the bin indices of the jet \pt. In all plots on the horizontal there is the true output values. On the vertical from top to bottom there is the input (reco), the predicted output with the old NN and the predicted output with the new NN. Train (left) and test (right). Since new NN gives a migration matrix closer to diagonal and is better than the old NN.}
+  \label{fig:2DMigrationMatrix}
+\end{figure}
+
+
+
