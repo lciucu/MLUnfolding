@@ -1,4 +1,10 @@
-The goal of this project is to adapt a code example of machine learning unfolding (MLUnfolding) using toy data to use it for the jet energy reconstruction of `ttbar e-mu` analysis. 
+# Research project
+
+The goal of this project is to adapt a code example of machine learning unfolding (MLUnfolding) using toy data to use it for the jet energy reconstruction of `ttbar e-mu` analysis.
+
+* [Report](./report/reportMLUnfolding.pdf)
+
+* [Presentation](./presentation/Presentation.pdf)
 
 # The example
 
@@ -67,11 +73,11 @@ During the DESY summer school project of 5 weeks there was only time to perform 
 
 # Report
 
-This repository contains also the `LaTex` report that will summarise the technique and the results. At the very end we may add the key plots in `.png` format. The `.pdf` of the report is [here](https://gitlab.cern.ch/lciucu/MLUnfolding/-/blob/master/report/reportMLUnfolding.pdf).
+This repository contains also the `LaTex` report that will summarise the technique and the results. At the very end we may add the key plots in `.png` format. The `.pdf` of the report is [here](./report/reportMLUnfolding.pdf).
 
 # Presentation
 
-This repository contains also a `LaTex` `Beamer` presentation with the plots produced. The [DESY template](https://pr.desy.de/e223/index_ger.html) is used. The `.pdf` of the presentation is [here](https://gitlab.cern.ch/lciucu/MLUnfolding/-/blob/master/presentation/Presentation.pdf).
+This repository contains also a `LaTex` `Beamer` presentation with the plots produced. The [DESY template](https://pr.desy.de/e223/index_ger.html) is used. The `.pdf` of the presentation is [here](./presentation/Presentation.pdf).
 
 # Other bibliography sources
 
@@ -79,4 +85,4 @@ This repository contains also a `LaTex` `Beamer` presentation with the plots pro
 
 # How to edit this README
 
-The README is written for `GitLab` in `Markdown`. Take a look at this [command cheetsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
+The README is written for for `GitHub` in `Markdown`. Take a look at this [command cheetsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
